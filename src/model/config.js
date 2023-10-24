@@ -1,138 +1,191 @@
 export const config = {
     numRows: 20,
     numCols: 20,
-    playerColors: ["red", "blue", "green", "yellow"],
-    totalPieces: 21,
+    playerColors: ['rgba(128,128,128,1)', 'rgba(0,0,255,1)', 'rgba(0,128,0,1)', 'rgba(255,255,0,1)'],
+    playerColorsFaded: ['rgba(128,128,128,0.5)', 'rgba(0,0,255,0.5)', 'rgba(0,128,0,0.5)', 'rgba(255,255,0,0.5)'],
+    totalPieces: 20,
+    numPlayers: 4, 
 
-    pieceTypes: {
-        type1: {
+    pieceTypes: [
+        {
+            id: 1,
             numSquares: 1,
             shape: [
                 [0, 0]
             ],
+            coord:[21, 1],
+            startingCoord: [21, 1]
         },
-        type2: {
+        {
+            id: 2,
             numSquares: 2,
             shape: [
-                [[0,0], [0,1]]
+                [0,0], [0,1]
             ],
+            coord: [21,3],
+            startingCoord: [21,3]
         },
-        type4: {
+        {
+            id: 4,
             numSquares: 3,
             shape: [
-                [[0,0], [0,1], [0,2]]
+                [0,0], [0,-1], [0,1]
             ],
+            coord: [21,7],
+            startingCoord: [21,7]
         },
-        type3: {
+        {
+            id: 3,
             numSquares: 3,
             shape: [
-                [[1,0], [1,1], [0,1]]
+                [0,0], [0,1], [-1,1]
             ],
+            coord: [21.5,10],
+            startingCoord: [21.5,10]
         },
-        type5: {
+        {
+            id: 5,
             numSquares: 4,
             shape: [
-                [[0,0], [0,1], [0,2], [0,3]]
+                [0,-1], [0,0], [0,1], [0,2]
             ],       
+            coord: [21,14],
+            startingCoord: [21,14]
         },
-        type6: {
+        {
+            id: 6,
             numSquares: 4,
             shape: [
-                [[1,0], [1,1], [1,2], [0,2]]
-            ],       
+                [0,-1], [0,0], [0,1], [-1,1]
+            ],    
+            coord: [24,2],
+            startingCoord: [24,2]
         },
-        type7: {
+        {
+            id: 7,
             numSquares: 4,
             shape: [
-                [[0,0], [0,1], [1,1], [1,2]]
-            ],       
+                [0,-1], [0,0], [1,0], [1,1]
+            ], 
+            coord: [23,6],
+            startingCoord: [23,6]
         },
-        type8: {
+        {
+            id: 8,
             numSquares: 4,
             shape: [
-                [[0,0], [0,1], [1,0], [1,1]]
+                [0,0], [0,1], [1,0], [1,1]
             ],       
+            coord:[23.5,9],
+            startingCoord: [23.5,9]
         },
-        type9: {
+        {
+            id: 9,
             numSquares: 4,
             shape: [
-                [[0,0], [0,1], [0,2], [1,1]]
-            ],       
+                [0,0], [0,-1], [0,1], [1,0]
+            ],   
+            coord:[23,14],
+            startingCoord: [23,14]
         },
-        type10: {
+        {
+            id: 10,
             numSquares: 5,
             shape: [
-                [[0,1], [0,2], [1,0], [1,1], [2,1]]
-            ],    
+                [0,0], [0,-1], [-1,0], [-1,1], [1,0]
+            ],   
+            coord: [27,2],
+            startingCoord: [27,2]
         },
-        type11: {
+        {
+            id: 11,
             numSquares: 5,
             shape: [
-                [[0,0], [0,1], [0,2], [0,3], [0,4]]
+                [0,-2], [0,-1], [0,0], [0,1], [0,2]
             ],    
+            coord: [26.5,7],
+            startingCoord: [26.5,7]
         },
-        type12: {
+        {
+            id: 12,
             numSquares: 5,
             shape: [
-                [[0,0], [0,1], [0,2], [0,3], [1,3]]
+                [0,0], [-1,0],[-2,0], [1,0], [1,1]
             ],    
+            coord: [27,12],
+            startingCoord: [27,12]
         },
-        type13: {
+        {
+            id: 13,
             numSquares: 5,
             shape: [
-                [[0,1], [1,0], [1,1], [2,0], [3,0]]
+                [0,0],[-1,0],[-1,-1],[0,-1],[1,-1]
             ],    
+            coord: [31,2],
+            startingCoord: [31,2]
         },
-        type14: {
+        {
+            id: 14,
             numSquares: 5,
             shape: [
-                [[0,0], [0,1], [1,0], [1,1], [2,0]]
-            ],    
+                [0,0],[0,-1],[0,1],[1,0],[2,0]
+            ],
+            coord: [29,5],
+            startingCoord: [29,5]
         },
-        type15: {
+        {
+            id: 15,
             numSquares: 5,
             shape: [
-                [[0,0], [0,1], [0,2], [1,1], [2,1]]
+                [0,0],[0,-1],[0,1],[-1,-1],[-1,1]
             ],    
+            coord: [30,9],
+            startingCoord: [30,9]
         },
-        type16: {
+        {
+            id: 16,
             numSquares: 5,
             shape: [
-                [[0,0], [0,2], [1,0], [1,1], [1,3]]
-            ],    
+                [0,0],[0,1],[-1,1],[1,0],[2,0]
+            ],   
+            coord: [26,14.5],
+            startingCoord: [26,14.5]
         },
-        type17: {
+        {
+            id: 17,
             numSquares: 5,
             shape: [
-                [[0,2], [1,2], [3,0], [3,1], [3,2]]
-            ],    
+                [0,0],[-1,0],[-2,0],[0,-1],[0,-2]
+            ],   
+            coord: [32,15],
+            startingCoord: [32,15]
         },
-        type18: {
+        {
+            id: 18,
             numSquares: 5,
             shape: [
-                [[2,0], [1,1], [1,2], [3,0], [3,1]]
+                [0,0],[0,1],[-1,1],[1,0],[1,-1]
             ],    
+            coord: [34,2],
+            startingCoord: [34,2]
         },
-        type19: {
+        {
+            id: 19,
             numSquares: 5,
             shape: [
-                [[0,1], [1,0], [1,1], [1,2], [2,1]]
-            ],    
+                [0,0], [0,-1], [0,1], [1,0], [-1,0]
+            ],  
+            coord: [34,6],
+            startingCoord: [34,6]
         },
-        type20: {
+        {
+            id: 20,
             numSquares: 5,
             shape: [
-                [[0,1], [1,0], [1,1], [2,1], [3,1]]
-            ],    
-        },
-        type21: {
-            numSquares: 5,
-            shape: [
-                [[0,0], [0,1], [1,1], [2,1], [2,2]]
-            ],    
-        },
-
-    }
-
-
+                [0,0],[-1,0],[-1,-1],[1,0],[1,1]
+            ], 
+            coord: [34,10],
+            startingCoord: [34,10]
+        }
+    ] 
 }

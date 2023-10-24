@@ -1,90 +1,292 @@
-import { config } from "./config.js";
-
-export var Config = config;
+import { BOXSIZE, SPACING, PLAYER1, PLAYER2, PLAYER3, PLAYER4, BOARDINDENTX, BOARDINDENTY, SELECTEDPIECELOCATION } from "../boundary/boundary.js";
 
 export default class Model {
     constructor(config) {
         this.config = config;
-        this.init(this.config);
+        this.board = this.createBoard();
+        this.playerColors = this.config.playerColors;
+        this.playerColorsFaded = this.config.playerColorsFaded;
+        this.numPlayers = this.config.numPlayers;
+        this.players = []
+        for (let i = 0; i < this.numPlayers; i++) {
+            this.players.push(new Player(i, this.playerColors[i], this.playerColorsFaded[i], this.createPieces(i, this.playerColors[i])));
+        }
+        this.currentPlayer = 0;
+        this.gameOver = false;
     }
 
-    init(config) {
-        this.config = config;
+    reset(numPlayers) {
         this.board = this.createBoard();
-        this.pieces = this.createPieces();
-        this.currentPiece = this.pieces[0];
+        this.playerColors = this.config.playerColors;
+        this.numPlayers = numPlayers;
+        this.players = []
+        for (let i = 0; i < this.numPlayers; i++) {
+            this.players.push(new Player(i, this.playerColors[i], this.playerColorsFaded[i], this.createPieces(i, this.playerColors[i])));
+        }
         this.currentPlayer = 0;
-        this.currentPieceIndex = 0;
-        this.currentPiecePosition = [0,0];
-        this.currentPieceOrientation = 0;
-        this.currentPieceColor = this.config.playerColors[this.currentPlayer];
         this.gameOver = false;
+    }
+
+    setNumPlayers(num) {
+        this.reset(num);
     }
 
     createBoard() {
         return new Board(this.config.numRows, this.config.numCols);
     }
 
-    createPieces() {
-        var pieces = [];
-        for (var i = 0; i < this.config.totalPieces; i++) {
+    createPieces(player, color) {
+        var pieces = [];       
+
+        for (var i = 0; i < this.config.pieceTypes.length ; i++) {
             var piece = new Piece(
-                "type" + (i + 1),
-                this.config.playerColors[i % this.config.playerColors.length],
-                this.config.pieceTypes["type" + (i + 1)].shape,
-                this.config.pieceTypes["type" + (i + 1)].numSquares
-            );
+                this.config.pieceTypes[i].id,
+                color,
+                this.config.pieceTypes[i].shape,
+                this.config.pieceTypes[i].numSquares,
+                this.config.pieceTypes[i].coord,
+                this.config.pieceTypes[i].startingCoord, 
+                player
+                );
             pieces.push(piece);
         }
         return pieces;
     }
 
-    getBoard() {
-        return this.board.getBoard();
+    checkSquares(piece) {
+        let checkEach = [];
+        for (let i = 0; i < piece.shape.length; i++) {
+            for (let j = 0; j < this.board.boardSquares.length; j++) {
+                if (this.board.boardSquares[j].contains(piece.shape[i].shapeCoords[0], piece.shape[i].shapeCoords[1])) {
+                    checkEach.push(this.board.boardSquares[j].checkOpen());
+                }
+            }
+        }
+        if (checkEach.length === 0) {
+            return false;
+        }
+        for (let i = 0; i < checkEach.length; i++) {
+            if (checkEach[i] === false) {
+                return false;
+            } 
+        }
+        return true;
     }
 
-    getCurrentPiece() {
-        return this.currentPiece;
+    findSquares(piece) {
+        let squares = [];
+        for (let i = 0; i < piece.shape.length; i++) {
+            for (let j = 0; j < this.board.boardSquares.length; j++) {
+                if (this.board.boardSquares[j].contains(piece.shape[i].shapeCoords[0], piece.shape[i].shapeCoords[1])) {
+                    squares.push(this.board.boardSquares[j]);
+                }
+            }
+        }
+        return squares;
     }
 
-    getCurrentPiecePosition() {
-        return this.currentPiecePosition;
+    setSquares(piece, color) {
+        for (let i = 0; i < piece.shape.length; i++) {
+            for (let j = 0; j < this.board.boardSquares.length; j++) {
+                if (this.board.boardSquares[j].contains(piece.shape[i].shapeCoords[0], piece.shape[i].shapeCoords[1])) {
+                    this.board.boardSquares[j].color = color;
+                    this.board.boardSquares[j].isOpen = false;
+                }
+            }
+        }
+        return true;
+    }
+    checkNotTouching(squares) {
+        let checkAroundAll = [];
+        for (let i = 0; i < squares.length; i++) {
+            let checkAround = [];
+            for (let j = 0; j < this.board.boardSquares.length; j++) {
+                if (this.board.boardSquares[j].row - 1 === squares[i].row && this.board.boardSquares[j].col === squares[i].col) {
+                    if (this.board.boardSquares[j].checkOpen()) {
+                        checkAround.push(true);
+                    } else if (this.board.boardSquares[j].color !== this.players[this.currentPlayer].color) {
+                        checkAround.push(true); 
+                    } else {
+                        checkAround.push(false);
+                    }
+                } else if (this.board.boardSquares[j].row + 1 === squares[i].row && this.board.boardSquares[j].col === squares[i].col) {
+                    if (this.board.boardSquares[j].checkOpen()) {
+                        checkAround.push(true);
+                    } else if (this.board.boardSquares[j].color !== this.players[this.currentPlayer].color) {
+                        checkAround.push(true); 
+                    } else {
+                        checkAround.push(false);
+                    }
+                } else if (this.board.boardSquares[j].row === squares[i].row && this.board.boardSquares[j].col - 1 === squares[i].col) {
+                    if (this.board.boardSquares[j].checkOpen()) {
+                        checkAround.push(true);
+                    } else if (this.board.boardSquares[j].color !== this.players[this.currentPlayer].color) {
+                        checkAround.push(true); 
+                    } else {
+                        checkAround.push(false);
+                    }
+                } else if (this.board.boardSquares[j].row === squares[i].row && this.board.boardSquares[j].col + 1 === squares[i].col) {
+                    if (this.board.boardSquares[j].checkOpen()) {
+                        checkAround.push(true);
+                    } else if (this.board.boardSquares[j].color !== this.players[this.currentPlayer].color) {
+                        checkAround.push(true); 
+                    } else {
+                        checkAround.push(false);
+                    }
+                } 
+            }
+            checkAroundAll.push(checkAround);
+        }
+        for (let i = 0; i < checkAroundAll.length; i++) {
+            for (let j = 0; j < checkAroundAll[i].length; j++) {
+                if (checkAroundAll[i][j] === false) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
-    getCurrentPieceOrientation() {
-        return this.currentPieceOrientation;
+
+    checkCornerTouch(squares) {
+        let checkAroundAll = [];
+        for (let i = 0; i < squares.length; i++) {
+            let checkAround = [];
+            for (let j = 0; j < this.board.boardSquares.length; j++) {
+                if (this.board.boardSquares[j].row - 1 === squares[i].row && this.board.boardSquares[j].col - 1 === squares[i].col) {
+                    if (this.board.boardSquares[j].checkOpen() === false) {
+                        if (this.board.boardSquares[j].color === this.players[this.currentPlayer].color) {
+                            checkAround.push(true);
+                        } else {
+                            checkAround.push(false);
+                        }
+                    } else {
+                        checkAround.push(false);
+                    }
+                } else if (this.board.boardSquares[j].row - 1 === squares[i].row && this.board.boardSquares[j].col + 1 === squares[i].col) {
+                    if (this.board.boardSquares[j].checkOpen() === false) {
+                        if (this.board.boardSquares[j].color === this.players[this.currentPlayer].color) {
+                            checkAround.push(true);
+                        } else {
+                            checkAround.push(false);
+                        }
+                    } else {
+                        checkAround.push(false);
+                    }
+                } else if (this.board.boardSquares[j].row + 1 === squares[i].row && this.board.boardSquares[j].col - 1 === squares[i].col) {
+                    if (this.board.boardSquares[j].checkOpen() === false) {
+                        if (this.board.boardSquares[j].color === this.players[this.currentPlayer].color) {
+                            checkAround.push(true);
+                        } else {
+                            checkAround.push(false);
+                        }
+                    } else {
+                        checkAround.push(false);
+                    }
+                } else if (this.board.boardSquares[j].row + 1 === squares[i].row && this.board.boardSquares[j].col + 1 === squares[i].col) {
+                    if (this.board.boardSquares[j].checkOpen() === false) {
+                        if (this.board.boardSquares[j].color === this.players[this.currentPlayer].color) {
+                            checkAround.push(true);
+                        } else {
+                            checkAround.push(false);
+                        }
+                    } else {
+                        checkAround.push(false);
+                    }
+                }
+            }
+            checkAroundAll.push(checkAround);
+        }
+        for (let i = 0; i < checkAroundAll.length; i++) {
+            for (let j = 0; j < checkAroundAll[i].length; j++) {
+                if (checkAroundAll[i][j] === true) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
-    getCurrentPieceColor() {
-        return this.currentPieceColor;
+
+    firstMove() {
+        if (this.players[this.currentPlayer].moveNumber === 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    getCurrentPlayer() {
-        return this.currentPlayer;
+
+    checkMoveAllowed(piece) {
+        let squares = this.findSquares(piece);
+        if (this.checkSquares(piece)) {
+            if (this.firstMove()) {
+                for (let i = 0; i < squares.length; i++) {
+                    if ((squares[i].row === 0) && (squares[i].col === 0)) {
+                        return true;
+                    } else if ((squares[i].row === this.board.numRows - 1) && (squares[i].col === 0)) {
+                        return true;
+                    } else if ((squares[i].row === 0) && (squares[i].col === this.board.numCols - 1)) {
+                        return true;
+                    } else if ((squares[i].row === this.board.numRows - 1) && (squares[i].col === this.board.numCols - 1)) {
+                        return true;
+                    } 
+                }
+            } else {
+
+                if (this.checkNotTouching(squares) && this.checkCornerTouch(squares)) {
+                    return true;
+                }
+            }
+        }
     }
+
 
     isGameOver() {
         return this.gameOver;
     }
+}
 
-    rotateCurrentPiece() {
-        this.currentPiece.rotate();
-        this.currentPieceOrientation = (this.currentPieceOrientation + 1) % 4;
+export class Player {
+    constructor(id, color, fadedColor, pieces) {
+        this.id = id;
+        this.color = color;
+        this.fadedColor = fadedColor;
+        this.score = 0;
+        this.pieces = pieces;
+        this.playedPieces = [];
+        this.moveNumber = 0;
+        this.selectedPiece = null;
     }
 
-    moveCurrentPieceLeft() {
-        this.currentPiecePosition[1] -= 1;
+    selectPiece(i) {
+        this.selectedPiece = this.pieces[i];
+        this.pieces[i].selectPiece();
     }
 
-    moveCurrentPieceRight() {
-        this.currentPiecePosition[1] += 1;
+    unselectPiece(i) {
+        this.pieces[i].unselectPiece();
     }
 
-    moveCurrentPieceDown() {
-        this.currentPiecePosition[0] += 1;
+    getSelectedShape() {
+        for (let i = 0; i < this.pieces.length; i++) {
+            for (let j = 0; j < this.pieces[i].shape.length; j++) {
+                if (this.pieces[i].shape[j].clicked === true) {
+                    return this.pieces[i].shape[j];
+                }
+            }
+        }
     }
 
+    removePiece(piece) {
+        this.playedPieces.push(piece);
+        this.pieces.splice(this.pieces.indexOf(piece), 1);
+        return piece;
+    }
 
+    increaseMoves() {
+        this.moveNumber++;
+    }
 
 }
 
@@ -98,52 +300,138 @@ export class Board {
 
     init() {
         for (var i = 0; i < this.numRows; i++) {
-            var row = [];
             for (var j = 0; j < this.numCols; j++) {
-                row.push({row: i, col: j, size: 1, color: "white"});
+                this.boardSquares.push(new BoardSquare(i, j, BOXSIZE, "white"));
             }
-            this.boardSquares.push(row);
         }
+    }    
+}
+
+export class BoardSquare {
+    constructor(row, col, size, color) {
+        this.row = row;
+        this.col = col;
+        this.size = size;
+        this.color = color;
+        this.isOpen = true;
+        this.coord = [BOARDINDENTX + (this.col * SPACING),BOARDINDENTY + (this.row * SPACING)]
     }
 
-    getBoard() {
-        return this.board;
+    contains(x, y) {
+        return ((x + 20 >= this.coord[0] && x - 20 <= this.coord[0]) && (y + 20 >= this.coord[1] && y - 20 <= this.coord[1]));
+    }
+
+    checkOpen() {
+        return this.isOpen;
+    }
+
+    checkColor() {
+        return this.color;
     }
 }
 
 export class Piece {
-    constructor(type, color, shape, numSquares) {
-        this.type = type;
+    constructor(id, color, shape, numSquares, coord, startingCoord, player) {
+        this.id = id
         this.color = color;
-        this.shape = shape;
+        this.startingCoord = startingCoord;
+        this.coord = coord;
+        this.player = player;
         this.numSquares = numSquares;
+        this.selected = false;
+        this.shape = this.createShapes(shape, coord, this.player);
     }
 
-    getShape() {
-        return this.shape;
+    selectPiece() {
+        this.selected = true;
+        this.movePiece(SELECTEDPIECELOCATION);
     }
 
-    getType() {
-        return this.type;
-    }
-
-    getColor() {
-        return this.color;
-    }
-
-    getNumSquares() {
-        return this.numSquares;
-    }
-
-    rotate() {
-        var newShape = [];
-        for (var i = 0; i < this.numSquares; i++) {
-            newShape.push([this.shape[i][1], -this.shape[i][0]]);
+    unselectPiece() {
+        this.selected = false;
+        for (let i = 0; i < this.shape.length; i++) {
+            this.shape[i].shapeCoords = this.shape[i].startingCoords;
         }
-        this.shape = newShape;
+    }
+
+    movePiece(location) {
+        var diffX = location[0] - this.shape[0].shapeCoords[0];
+        var diffY = location[1] - this.shape[0].shapeCoords[1];
+        for (let i = 0; i < this.shape.length; i++) {
+            this.shape[i].moveShape(diffX, diffY);
+        }
+    }
+
+    createShapes(shape, coord) {
+        var shapes = [];
+        for (var i = 0; i < shape.length; i++) {
+            shapes.push(new PieceShape(shape[i], coord, this.player));
+        }
+        return shapes;
+    }
+
+
+    rotate(direction) {
+        let base = this.shape[0].shapeCoords;
+        for (let i = 0; i < this.shape.length; i++) {
+            let x = this.shape[i].shapeCoords[0] - base[0];
+            let y = this.shape[i].shapeCoords[1] - base[1];
+            if (direction) {
+                this.shape[i].shapeCoords = [base[0] - y, base[1] + x];
+            } else {
+                this.shape[i].shapeCoords = [base[0] + y, base[1] - x];
+            }
+        }
     }
 }
 
+export class PieceShape {
+    constructor(shape, coord, player) {
+        this.shape = shape;
+        this.player = player;
+        this.playerPiecesLocation = null;
+        if (this.player === 0) {
+            this.playerPiecesLocation = PLAYER1;
+        } else if (this.player === 1) {
+            this.playerPiecesLocation = PLAYER2;
+        } else if (this.player === 2) {
+            this.playerPiecesLocation = PLAYER3;
+        } else if (this.player === 3) {
+            this.playerPiecesLocation = PLAYER4;
+        }
+        this.startingCoords = this.calcShapeCoords(coord);
+        this.shapeCoords = this.calcShapeCoords(coord);
+        this.clicked = false;
+    }
+
+    updateShape(coord) {
+        this.shapeCoords = this.calcShapeCoords(coord);
+    }
+
+    calcShapeCoords(coord) {
+        let coords = [];
+        coords.push(this.playerPiecesLocation[0] + (this.shape[0] + coord[0]) * SPACING, this.playerPiecesLocation[1] +  (this.shape[1] + coord[1]) * SPACING);
+        return coords;
+    }
+
+    contains(x, y) {
+        return ((x + 20 >= this.shapeCoords[0] && x - 20 <= this.shapeCoords[0]) && (y + 20 >= this.shapeCoords[1] && y - 20 <= this.shapeCoords[1]));
+    }
+
+    clickShape(x, y) {
+        if (this.contains(x, y)) {
+            this.clicked = true;
+            return true;
+        } else {
+            this.clicked = false;
+            return false;
+        }
+    }
+
+    moveShape(diffX, diffY) {
+        this.shapeCoords = [this.shapeCoords[0] + diffX, this.shapeCoords[1] + diffY];
+    }
+}
 
 
 

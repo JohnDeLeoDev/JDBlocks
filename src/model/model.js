@@ -1,4 +1,4 @@
-import { BOXSIZE, SPACING, PLAYER1, PLAYER2, PLAYER3, PLAYER4, BOARDINDENTX, BOARDINDENTY, SELECTEDPIECELOCATION } from "../boundary/boundary.js";
+import { BOXSIZE, SPACING, PLAYER1, PLAYER2, PLAYER3, PLAYER4, BOARDINDENTX, BOARDINDENTY, SELECTEDPIECELOCATION, DRAGBOUNDS } from "../boundary/boundary.js";
 
 export default class Model {
     constructor(config) {
@@ -62,7 +62,7 @@ export default class Model {
                 }
             }
         }
-        if (checkEach.length === 0) {
+        if (checkEach.length === 0 || checkEach.length !== piece.shape.length) {
             return false;
         }
         for (let i = 0; i < checkEach.length; i++) {
@@ -72,6 +72,30 @@ export default class Model {
         }
         return true;
     }
+
+    checkSquaresByCoord(coord, shape) {
+        let checkEach = [];
+        let tempShape = shape;
+        
+        for (let i = 0; i < tempShape.length; i++) {
+            for (let j = 0; j < this.board.boardSquares.length; j++) {
+                if (this.board.boardSquares[j].contains(tempShape[i].testShapeCoords[0], tempShape[i].testShapeCoords[1])) {
+                    checkEach.push(this.board.boardSquares[j].checkOpen());
+                }
+            }
+        }
+        if (checkEach.length === 0 || checkEach.length !== tempShape.length) {
+            return false;
+        }
+        for (let i = 0; i < checkEach.length; i++) {
+            if (checkEach[i] === false) {
+                return false;
+            } 
+        }
+
+        return true;
+    }
+
 
     findSquares(piece) {
         let squares = [];
@@ -241,7 +265,29 @@ export default class Model {
         }
     }
 
-
+    checkVictory() {    
+        for (let i = 0; i < this.players.length; i++) {
+            if (this.players[i].pieces.length === 0) {
+                this.gameOver = true;
+                console.log("No pieces remaining. Game over.")
+                return true;
+            }
+            for (let j = 0; j < this.players[i].pieces.length; j++) {
+                for (let k = BOARDINDENTX; k < BOARDINDENTX + (this.board.numCols * SPACING); k += SPACING) {
+                    for (let l = BOARDINDENTY; l < BOARDINDENTY + (this.board.numRows * SPACING); l += SPACING) {
+                        if (this.checkSquaresByCoord([k, l], this.players[i].pieces[j].shape)) {
+                            console.log(k, l, this.players[i].pieces[j])
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        this.gameOver = true;
+        console.log("No moves remaining. Game over.")
+        return true;
+    }
+                    
     isGameOver() {
         return this.gameOver;
     }
@@ -273,12 +319,12 @@ export class Player {
         for (let i = 0; i < this.pieces.length; i++) {
             this.pieces[i].unclickPiece();
         }
+        this.clickedPiece = null;
     }
 
     selectPiece(i) {
         this.selectedPiece = this.pieces[i];
         this.pieces[i].selectPiece();
-        console.log(this.selectedPiece);
         this.unclickPieces();
     }
 
@@ -290,6 +336,7 @@ export class Player {
         for (let i = 0; i < this.pieces.length; i++) {
             this.pieces[i].unselectPiece();
         }
+        this.selectedPiece = null;
     }
 
     getSelectedShape() {
@@ -339,10 +386,11 @@ export class BoardSquare {
         this.color = color;
         this.isOpen = true;
         this.coord = this.calcSquareCoords();
+        this.bounds = this.calcSquareBounds();
     }
 
     contains(x, y) {
-        return ((x + 20 >= this.coord[0] && x - 20 <= this.coord[0]) && (y + 20 >= this.coord[1] && y - 20 <= this.coord[1]));
+        return ((x >= this.bounds[0] && x <= this.bounds[1]) && (y >= this.bounds[2] && y <= this.bounds[3]));
     }
 
     checkOpen() {
@@ -351,6 +399,15 @@ export class BoardSquare {
 
     checkColor() {
         return this.color;
+    }
+
+    calcSquareBounds() {
+        let xLeft = this.coord[0] - (this.size / 2);
+        let xRight = this.coord[0] + (this.size / 2);
+        let yTop = this.coord[1] - (this.size / 2);
+        let yBottom = this.coord[1] + (this.size / 2);
+
+        return [xLeft, xRight, yTop, yBottom];
     }
 
     calcSquareCoords() {
@@ -397,6 +454,7 @@ export class Piece {
         this.coord = location;
         for (let i = 0; i < this.shape.length; i++) {
             this.shape[i].shapeCoords = this.shape[i].calcShapeCoordsSelected(this.coord);
+            this.shape[i].bounds = this.shape[i].calcShapeBounds();
         }
     }
 
@@ -414,6 +472,21 @@ export class Piece {
             shapes.push(new PieceShape(shape[i], coord, this.player));
         }
         return shapes;
+    }
+
+    flip(direction) {
+        let base = this.shape[0].shapeCoords;
+        for (let i = 0; i < this.shape.length; i++) {
+            let x = this.shape[i].shapeCoords[0] - base[0];
+            let y = this.shape[i].shapeCoords[1] - base[1];
+            if (direction) {
+                this.shape[i].shapeCoords = [base[0] + x, base[1] - y];
+                this.shape[i].calcShapeBounds();
+            } else {
+                this.shape[i].shapeCoords = [base[0] - x, base[1] + y];
+                this.shape[i].calcShapeBounds();
+            }
+        }
     }
 
 
@@ -447,7 +520,19 @@ export class PieceShape {
         }
         this.startingCoords = this.calcShapeCoords(coord);
         this.shapeCoords = this.calcShapeCoords(coord);
+        this.testShapeCoords = this.calcTestShapeCoords();
+        this.shapeSize = BOXSIZE;
+        this.bounds = this.calcShapeBounds();
         this.clicked = false;
+    }
+
+    calcShapeBounds() {
+        let xLeft = this.shapeCoords[0] - (this.shapeSize / 2);
+        let xRight = this.shapeCoords[0] + (this.shapeSize / 2);
+        let yTop = this.shapeCoords[1] - (this.shapeSize / 2);
+        let yBottom = this.shapeCoords[1] + (this.shapeSize / 2);
+
+        return [xLeft, xRight, yTop, yBottom];
     }
 
     updateShape(coord) {
@@ -460,6 +545,16 @@ export class PieceShape {
         return coords;
     }
 
+    calcTestShapeCoords() {
+        let coords = [];
+        for (let i = BOARDINDENTX; i < BOARDINDENTX + (20 * SPACING); i += SPACING) {
+            for (let j = BOARDINDENTY; j < BOARDINDENTY + (20 * SPACING); j += SPACING) {
+                coords.push([i, j]);
+            }
+        }
+        return coords;
+    }
+
     calcShapeCoords(coord) {
         let coords = [];
         coords.push(this.playerPiecesLocation[0] + (this.shape[0] + coord[0]) * SPACING, this.playerPiecesLocation[1] +  (this.shape[1] + coord[1]) * SPACING);
@@ -467,7 +562,7 @@ export class PieceShape {
     }
 
     contains(x, y) {
-        return ((x + 20 >= this.shapeCoords[0] && x - 20 <= this.shapeCoords[0]) && (y + 20 >= this.shapeCoords[1] && y - 20 <= this.shapeCoords[1]));
+        return ((x + 1 >= this.bounds[0] && x - 1 <= this.bounds[1]) && (y + 1 >= this.bounds[2] && y - 1 <= this.bounds[3]));
     }
 
     clickShape(x, y) {
@@ -482,6 +577,7 @@ export class PieceShape {
 
     moveShape(diffX, diffY) {
         this.shapeCoords = [this.shapeCoords[0] + diffX, this.shapeCoords[1] + diffY];
+        this.calcShapeBounds();
     }
 }
 

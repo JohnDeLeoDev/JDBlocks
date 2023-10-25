@@ -9,6 +9,8 @@ export const PLAYER2 = [610, 10]; //green
 export const PLAYER4 = [610, PLAYERBOXSIZE + 10]; //Yellow
 export const PLAYERINDENT = 5;
 export const SELECTEDPIECELOCATION = [860, 120];
+export const DRAGBOUNDS = [BOARDINDENTX, BOARDINDENTX+600, 0, 1200];
+export const PLAYERBOUNDS = [[0, PLAYERBOXSIZE, 0, PLAYERBOXSIZE],[1200, 1200 + PLAYERBOXSIZE, 0, PLAYERBOXSIZE],[0, PLAYERBOXSIZE, PLAYERBOXSIZE + 2*PLAYERINDENT, 2*PLAYERBOXSIZE + 2*PLAYERINDENT],[1200, 1200 + PLAYERBOXSIZE, PLAYERBOXSIZE + 2*PLAYERINDENT, 2*PLAYERBOXSIZE + 2*PLAYERINDENT]];
 
 // playerColors: ['rgba(128,128,128,1)', 'rgba(0,0,255,1)', 'rgba(0,128,0,1)', 'rgba(255,255,0,1)']
 
@@ -28,8 +30,19 @@ export function drawBoard(ctx, model) {
     ctx.height = window.innerHeight;
 
     ctx.beginPath();
-    ctx.fillRect(780, 50, 175, 175);
+    if (model.players[model.currentPlayer].selectedPiece) {
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 6;
+    } else {
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
+    }
     ctx.strokeRect(780, 50, 175, 175);
+
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 2;
+
+    ctx.strokeRect(BOARDINDENTX, 0, 600, 1200);
     ctx.strokeStyle = "black";
     ctx.fillStyle = "grey";
 
@@ -55,10 +68,11 @@ export function drawBoard(ctx, model) {
         ctx.fillRect(shape.squareCoords[0], shape.squareCoords[1], BOXSIZE, BOXSIZE);
         ctx.strokeRect(shape.squareCoords[0], shape.squareCoords[1], BOXSIZE, BOXSIZE);
     }
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 2;
     for (let i = 0; i < model.players.length; i++) {
         if (i === 0) {
             if (model.players[i] === model.players[model.currentPlayer]) {
+                ctx.lineWidth = 6;
                 ctx.strokeStyle = "red";
                 ctx.fillStyle = model.players[i].fadedColor;
             } else {
@@ -69,6 +83,7 @@ export function drawBoard(ctx, model) {
             ctx.strokeRect(PLAYERINDENT, PLAYERINDENT, PLAYERBOXSIZE, PLAYERBOXSIZE);
         } else if (i === 1) {
             if (model.players[i] === model.players[model.currentPlayer]) {
+                ctx.lineWidth = 6;
                 ctx.strokeStyle = "red";
                 ctx.fillStyle = model.players[i].fadedColor;
             } else {
@@ -79,6 +94,7 @@ export function drawBoard(ctx, model) {
             ctx.strokeRect(1200 + PLAYERINDENT, PLAYERINDENT, PLAYERBOXSIZE, PLAYERBOXSIZE);
         } else if (i === 2) {
             if (model.players[i] === model.players[model.currentPlayer]) {
+                ctx.lineWidth = 6;
                 ctx.strokeStyle = "red";
                 ctx.fillStyle = model.players[i].fadedColor;
             } else {
@@ -89,6 +105,7 @@ export function drawBoard(ctx, model) {
             ctx.strokeRect(PLAYERINDENT, PLAYERBOXSIZE + 2*PLAYERINDENT, PLAYERBOXSIZE, PLAYERBOXSIZE);
         } else if (i === 3) {
             if (model.players[i] === model.players[model.currentPlayer]) {
+                ctx.lineWidth = 6;
                 ctx.strokeStyle = "red";
                 ctx.fillStyle = model.players[i].fadedColor;
             } else {

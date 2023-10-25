@@ -87,5 +87,11 @@ export const layout = {
         height: "30px",
     },
 
+    skipTurn: {
+        margin: "20px",
+        width: "100px",
+        height: "50px",
+        fontSize: "20px",
+    },
 
 }

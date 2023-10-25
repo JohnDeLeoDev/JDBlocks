@@ -257,15 +257,39 @@ export class Player {
         this.playedPieces = [];
         this.moveNumber = 0;
         this.selectedPiece = null;
+        this.clickedPiece = null;
+    }
+
+    clickPiece(i) {
+        this.clickedPiece = this.pieces[i];
+        this.pieces[i].clickPiece();
+    }
+
+    unclickPiece(i) {
+        this.pieces[i].unclickPiece();
+    }
+
+    unclickPieces() {
+        for (let i = 0; i < this.pieces.length; i++) {
+            this.pieces[i].unclickPiece();
+        }
     }
 
     selectPiece(i) {
         this.selectedPiece = this.pieces[i];
         this.pieces[i].selectPiece();
+        console.log(this.selectedPiece);
+        this.unclickPieces();
     }
 
     unselectPiece(i) {
         this.pieces[i].unselectPiece();
+    }
+
+    unselectPieces() {
+        for (let i = 0; i < this.pieces.length; i++) {
+            this.pieces[i].unselectPiece();
+        }
     }
 
     getSelectedShape() {
@@ -314,7 +338,7 @@ export class BoardSquare {
         this.size = size;
         this.color = color;
         this.isOpen = true;
-        this.coord = [BOARDINDENTX + (this.col * SPACING),BOARDINDENTY + (this.row * SPACING)]
+        this.coord = this.calcSquareCoords();
     }
 
     contains(x, y) {
@@ -328,6 +352,12 @@ export class BoardSquare {
     checkColor() {
         return this.color;
     }
+
+    calcSquareCoords() {
+        let coords = [];
+        coords.push(BOARDINDENTX + (this.col * SPACING),BOARDINDENTY + (this.row * SPACING));
+        return coords;
+    }
 }
 
 export class Piece {
@@ -338,19 +368,35 @@ export class Piece {
         this.coord = coord;
         this.player = player;
         this.numSquares = numSquares;
+        this.clicked = false;
         this.selected = false;
         this.shape = this.createShapes(shape, coord, this.player);
     }
 
+    clickPiece() {
+        this.clicked = true;
+    }
+
+    unclickPiece() {
+        this.clicked = false;
+    }
+
     selectPiece() {
         this.selected = true;
-        this.movePiece(SELECTEDPIECELOCATION);
+        this.moveWholePiece(SELECTEDPIECELOCATION);
     }
 
     unselectPiece() {
         this.selected = false;
         for (let i = 0; i < this.shape.length; i++) {
             this.shape[i].shapeCoords = this.shape[i].startingCoords;
+        }
+    }
+
+    moveWholePiece(location) {
+        this.coord = location;
+        for (let i = 0; i < this.shape.length; i++) {
+            this.shape[i].shapeCoords = this.shape[i].calcShapeCoordsSelected(this.coord);
         }
     }
 
@@ -406,6 +452,12 @@ export class PieceShape {
 
     updateShape(coord) {
         this.shapeCoords = this.calcShapeCoords(coord);
+    }
+
+    calcShapeCoordsSelected(coord) {
+        let coords = [];
+        coords.push(coord[0] + (this.shape[0] * SPACING), coord[1] +  (this.shape[1]) * SPACING);
+        return coords;
     }
 
     calcShapeCoords(coord) {

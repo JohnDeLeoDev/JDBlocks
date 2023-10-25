@@ -16,10 +16,7 @@ export const layout = {
         margin: "auto",
     },
 
-    playerText: {
-        fontWeight: "bold",
-        fontSize: "30px",
-    },
+    
 
     players: {
         display: "flex",
@@ -50,27 +47,36 @@ export const layout = {
 
     buttonsArea: {
         display: "flex",
-        justifyContent: "space-between",
+        justifyContent: "center",
+        margin: "auto",
     },
 
     rotateText: {
+        margin: "20px",
         fontWeight: "bold",
         fontSize: "30px",
     },
 
     rotateButtons: {
-        justifyContent: "center",
         margin: "20px",
         height: "50px",
         width: "50px",
     },
 
     rotateSVG: {
+        color: "black",
         width: "30px",
         height: "30px",
     },
 
+    playerText: {
+        margin: "20px",
+        fontWeight: "bold",
+        fontSize: "30px",
+    },
+
     playerChange: {
+        margin: "20px",
         width: "50px",
         height: "50px",
         margin: "20px",

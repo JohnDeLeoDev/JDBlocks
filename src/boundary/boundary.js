@@ -8,7 +8,7 @@ export const PLAYER3 = [-600, PLAYERBOXSIZE + 10]; //blue
 export const PLAYER2 = [610, 10]; //green
 export const PLAYER4 = [610, PLAYERBOXSIZE + 10]; //Yellow
 export const PLAYERINDENT = 5;
-export const SELECTEDPIECELOCATION = [850, 75];
+export const SELECTEDPIECELOCATION = [860, 120];
 
 // playerColors: ['rgba(128,128,128,1)', 'rgba(0,0,255,1)', 'rgba(0,128,0,1)', 'rgba(255,255,0,1)']
 
@@ -27,11 +27,9 @@ export function drawBoard(ctx, model) {
     ctx.width = window.innerWidth;
     ctx.height = window.innerHeight;
 
-    let selectedPiece = model.players[model.currentPlayer].selectedPiece;
-
     ctx.beginPath();
-    ctx.fillRect(BOARDINDENTX, 5, 600, 200);
-    ctx.strokeRect(BOARDINDENTX, 5, 600, 200);
+    ctx.fillRect(780, 50, 175, 175);
+    ctx.strokeRect(780, 50, 175, 175);
     ctx.strokeStyle = "black";
     ctx.fillStyle = "grey";
 
@@ -54,8 +52,8 @@ export function drawBoard(ctx, model) {
             ctx.fillStyle = model.board.boardSquares[i].color;
         }
 
-        ctx.fillRect(BOARDINDENTX + shape.col * SPACING, BOARDINDENTY + shape.row * SPACING, BOXSIZE, BOXSIZE);
-        ctx.strokeRect(BOARDINDENTX + shape.col * SPACING, BOARDINDENTY + shape.row * SPACING, BOXSIZE, BOXSIZE);
+        ctx.fillRect(shape.squareCoords[0], shape.squareCoords[1], BOXSIZE, BOXSIZE);
+        ctx.strokeRect(shape.squareCoords[0], shape.squareCoords[1], BOXSIZE, BOXSIZE);
     }
     ctx.lineWidth = 4;
     for (let i = 0; i < model.players.length; i++) {
@@ -107,7 +105,7 @@ export function drawBoard(ctx, model) {
                 let piece = computePiece(model.players[i].pieces[j]);
                 ctx.fillStyle = model.players[i].pieces[j].color;
                 ctx.strokeStyle = "black";
-                if (model.players[i].pieces[j].selected === true) {
+                if (model.players[i].pieces[j].clicked === true) {
                     ctx.fillStyle = model.players[model.currentPlayer].pieces[i].color;
                     ctx.strokeStyle = "red";
                     for (let j = 0; j < piece.shapeCoords.length; j++) {
@@ -127,7 +125,7 @@ export function drawBoard(ctx, model) {
 
 export function computeSquare(square) {
     let c = square;
-    return new SquareShape(c.row, c.col, c.size, c.color);
+    return new SquareShape(c.row, c.col, c.size, c.color, c.coord);
 }
 
 export function computePiece(piece) {
@@ -136,11 +134,12 @@ export function computePiece(piece) {
 }
 
 export class SquareShape {
-    constructor(row, col, size, color) {
+    constructor(row, col, size, color, coords) {
         this.row = row;
         this.col = col;
         this.size = size;
         this.color = color;
+        this.squareCoords = coords;
     }
 }
 

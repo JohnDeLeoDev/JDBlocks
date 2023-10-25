@@ -1,27 +1,51 @@
-export const CLICKOFFSETX = 100;
-export const CLICKOFFSETY = 310;
+export const CLICKOFFSETX = 15;
+export const CLICKOFFSETY = 315;
 
-export function selectPiece(model, event) {
+
+export function clickPiece(model, event) {
+    model.players[model.currentPlayer].unclickPieces();
     let x = event.pageX - CLICKOFFSETX;
     let y = event.pageY - CLICKOFFSETY;
     for (let i = 0; i < model.players[model.currentPlayer].pieces.length; i++) {
         for (let j = 0; j < model.players[model.currentPlayer].pieces[i].shape.length; j++) {
             if (model.players[model.currentPlayer].pieces[i].shape[j].clickShape(x, y)) {
                 model.players[model.currentPlayer].pieces[i].shape[j].clickShape(x, y);
-                model.players[model.currentPlayer].selectPiece(i);
-                break;
+                model.players[model.currentPlayer].clickPiece(i);
+                return true;
             } else {
-                model.players[model.currentPlayer].unselectPiece(i);
+                model.players[model.currentPlayer].unclickPiece(i);
             }
         }
     }
+    model.players[model.currentPlayer].unclickPieces();
+    return false;
+}
+
+export function selectPiece(model, event) {
+    model.players[model.currentPlayer].unselectPieces();
+    let x = event.pageX - CLICKOFFSETX;
+    let y = event.pageY - CLICKOFFSETY;
+    for (let i = 0; i < model.players[model.currentPlayer].pieces.length; i++) {
+        for (let j = 0; j < model.players[model.currentPlayer].pieces[i].shape.length; j++) {
+            if (model.players[model.currentPlayer].pieces[i].shape[j].clickShape(x, y)) {
+                model.players[model.currentPlayer].pieces[i].shape[j].clickShape(x, y);
+                if (model.players[model.currentPlayer].clickedPiece === model.players[model.currentPlayer].pieces[i]) {
+                    model.players[model.currentPlayer].selectPiece(i);
+                    return true;
+                }
+            } else {
+                model.players[model.currentPlayer].unselectPieces();
+            }
+        }
+    }
+    return false;
 }
 
 export function movePiece(model, event) {
     let x = event.pageX - CLICKOFFSETX;
     let y = event.pageY - CLICKOFFSETY;
-    for (let i = 0; i < model.players[model.currentPlayer].selectedPiece.shape.length; i++) {
-        if (model.players[model.currentPlayer].selectedPiece.shape[i].clickShape(x, y)) {
+    if (event.buttons === 1) {
+        for (let i = 0; i < model.players[model.currentPlayer].selectedPiece.shape.length; i++) {
             model.players[model.currentPlayer].selectedPiece.movePiece([x, y]);
         }
     }
@@ -38,21 +62,19 @@ export function movePieceToBoard(model) {
     if (model.players[model.currentPlayer].selectedPiece === null) {
         return;
     }
-    let pieceMem = model.players[model.currentPlayer].selectedPiece
-
     let color = model.players[model.currentPlayer].selectedPiece.color;
     if (model.checkSquares(model.players[model.currentPlayer].selectedPiece) && model.checkMoveAllowed(model.players[model.currentPlayer].selectedPiece)) {
         model.setSquares(model.players[model.currentPlayer].selectedPiece, color);
         model.players[model.currentPlayer].removePiece(model.players[model.currentPlayer].selectedPiece);
-        model.players[model.currentPlayer].selectedPiece = null;
+        model.players[model.currentPlayer].unclickPieces();
+        model.players[model.currentPlayer].unselectPieces();
         model.players[model.currentPlayer].increaseMoves();
+
         nextPlayer(model);
+        return true;
     } else {
-        for (let i = 0; i < model.players[model.currentPlayer].selectedPiece.shape.length; i++) {
-            model.players[model.currentPlayer].selectedPiece.shape[i].shapeCoords[0] = pieceMem.shape[i].shapeCoords[0];
-            model.players[model.currentPlayer].selectedPiece.shape[i].shapeCoords[1] = pieceMem.shape[i].shapeCoords[1];
-        }
-        
+        model.players[model.currentPlayer].selectedPiece.selectPiece();
+        return false;
     }
 }
 

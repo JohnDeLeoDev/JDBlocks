@@ -6,11 +6,12 @@ import { config } from './model/config.js';
 import { redrawCanvas } from './boundary/boundary.js';
 import { layout } from './boundary/layout';
 import { BOXSIZE } from './boundary/boundary.js';
-import { movePiece, selectPiece, movePieceToBoard, rotatePiece, nextPlayer, prevPlayer } from './controller/controller';
+import { movePiece, selectPiece, movePieceToBoard, rotatePiece, nextPlayer, prevPlayer, CLICKOFFSETX, CLICKOFFSETY, clickPiece } from './controller/controller';
 import rotateLeft from './assets/rotate.left.svg';
 import rotateRight from './assets/rotate.right.svg';
 import nextArrow from './assets/arrowshape.right.svg';
 import prevArrow from './assets/arrowshape.left.svg';
+
 
 function App() {
   const [model] = React.useState(new Model(config));
@@ -21,15 +22,26 @@ function App() {
     redrawCanvas(model, canvasRef.current);
   }, [model, redraw]);
 
+
   const mouseHandler = (event) => {
-    if (event._reactName === "onMouseDown") {
-      selectPiece(model, event);
-    } else if (event._reactName === "onMouseMove" && event.buttons === 1 && model.players[model.currentPlayer].selectedPiece) {
-      movePiece(model, event);
-    } else if (event._reactName === "onMouseUp" && model.players[model.currentPlayer].selectedPiece) {
+    if (event.type === "mouseup" && model.players[model.currentPlayer].selectedPiece && model.players[model.currentPlayer].selectedPiece.clicked === true) {
       movePieceToBoard(model);
-    }
-    forceRedraw(redraw + 1);
+      forceRedraw(redraw + 1);
+    } 
+    
+    if (event.type === "mousemove" && model.players[model.currentPlayer].selectedPiece && model.players[model.currentPlayer].selectedPiece.clicked === true) {
+      movePiece(model, event);
+      forceRedraw(redraw + 1);
+    } 
+    
+    if (event.type === "mouseup" && model.players[model.currentPlayer].clickedPiece) {
+      selectPiece(model, event);
+      forceRedraw(redraw + 1);
+    } 
+    if (event.type === "mousedown") {
+      clickPiece(model, event);
+      forceRedraw(redraw + 1);
+    } 
   }
 
   function setNumPlayers(numPlayers) {
@@ -65,21 +77,6 @@ function App() {
         </div>
       </div>
       <div style={layout.buttonsArea}>
-        <div style={layout.rotate}>
-          <p style={layout.rotateText}>Rotate piece:</p>
-          <button style={layout.rotateButtons} data-testid="counterclockwise" onClick={() => {
-                      rotatePiece(model, false);
-                      forceRedraw(redraw + 1);
-          }}>
-            <img style={layout.rotateSVG} src={rotateLeft} alt="Rotate Counterclockwise"/>
-          </button>
-          <button style={layout.rotateButtons} data-testid="clockwise" onClick={() => {
-            rotatePiece(model, true);
-            forceRedraw(redraw + 1);
-          }}>
-            <img style={layout.rotateSVG} src={rotateRight} alt="Rotate Clockwise"/>
-          </button>
-        </div>
         <div style={layout.playerSelect}>
           <div>
           <p style={layout.playerText}>Player {model.currentPlayer + 1}'s Turn</p>
@@ -95,6 +92,21 @@ function App() {
             forceRedraw(redraw + 1);
           }}>
             <img style={layout.playerChangeSVG} src={nextArrow} alt=""/>
+          </button>
+        </div>
+        <div style={layout.rotate}>
+          <p style={layout.rotateText}>Rotate piece:</p>
+          <button style={layout.rotateButtons} data-testid="counterclockwise" onClick={() => {
+                      rotatePiece(model, false);
+                      forceRedraw(redraw + 1);
+          }}>
+            <img style={layout.rotateSVG} src={rotateLeft} alt="Rotate Counterclockwise"/>
+          </button>
+          <button style={layout.rotateButtons} data-testid="clockwise" onClick={() => {
+            rotatePiece(model, true);
+            forceRedraw(redraw + 1);
+          }}>
+            <img style={layout.rotateSVG} src={rotateRight} alt="Rotate Clockwise"/>
           </button>
         </div>
       </div>

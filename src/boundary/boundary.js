@@ -18,6 +18,8 @@ export const PLAYERBOUNDS = [[0, PLAYERBOXSIZE, 0, PLAYERBOXSIZE],[1200, 1200 + 
 export function redrawCanvas(model, canvasObj) {
     const ctx = canvasObj.getContext('2d');
     ctx.clearRect(0, 0, canvasObj.width, canvasObj.height);
+    ctx.width = window.innerWidth;
+    ctx.height = window.innerHeight;
     drawBoard(ctx, model);
 }
 
@@ -30,6 +32,7 @@ export function drawBoard(ctx, model) {
     ctx.height = window.innerHeight;
 
     ctx.beginPath();
+    ctx.strokeRect(0, 0, ctx.width, ctx.height);    
     if (model.players[model.currentPlayer].selectedPiece) {
         ctx.strokeStyle = "red";
         ctx.lineWidth = 6;
@@ -49,7 +52,9 @@ export function drawBoard(ctx, model) {
     for (let i = 0; i < model.board.boardSquares.length; i++) {
         ctx.fillStyle = "white";
         let shape = computeSquare(model.board.boardSquares[i]);
-        if (model.board.boardSquares[i].checkOpen()) {
+        if (model.board.boardSquares[i].checkHovered() && model.board.boardSquares[i].checkOpen()) {
+            ctx.fillStyle = "red";
+        } else if (model.board.boardSquares[i].checkOpen()) {
             if (model.board.boardSquares[i].row === 0 && model.board.boardSquares[i].col === 0) {
                 ctx.fillStyle = "red";
             } else if (model.board.boardSquares[i].row === 0 && (model.board.boardSquares[i].col === ( model.board.numCols - 1))) {

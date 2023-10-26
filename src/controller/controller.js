@@ -8,6 +8,7 @@ export function clickPiece(model, event) {
     model.players[model.currentPlayer].unclickPieces();
     let x = event.pageX - CLICKOFFSETX;
     let y = event.pageY - CLICKOFFSETY;
+    console.log(x, y);
 
     if (!dragBounds(model, event)) {
         for (let i = 0; i < model.players[model.currentPlayer].pieces.length; i++) {
@@ -59,11 +60,15 @@ export function selectPiece(model, event) {
 }
 
 export function movePiece(model, event) {
+    model.unHoverPieces();
     let x = event.pageX - CLICKOFFSETX;
     let y = event.pageY - CLICKOFFSETY;
     if (model.players[model.currentPlayer].clickedPiece !== null) {
         for (let i = 0; i < model.players[model.currentPlayer].selectedPiece.shape.length; i++) {
             model.players[model.currentPlayer].selectedPiece.movePiece([x, y]);
+            if (model.checkSquares(model.players[model.currentPlayer].selectedPiece) && model.checkMoveAllowed(model.players[model.currentPlayer].selectedPiece)) {
+                model.hoverPiece(model.players[model.currentPlayer].selectedPiece);
+            }
         }
     }
 }
@@ -117,14 +122,13 @@ export function flipPiece(model, direction) {
     return model;
 }
 
-
 export function movePieceToBoard(model) {
     if (model.players[model.currentPlayer].selectedPiece === null) {
         return false;
     }
-    let pieceMem = model.players[model.currentPlayer].selectedPiece;
     let color = model.players[model.currentPlayer].selectedPiece.color;
     if (model.checkSquares(model.players[model.currentPlayer].selectedPiece) && model.checkMoveAllowed(model.players[model.currentPlayer].selectedPiece)) {
+        model.unHoverPieces();
         model.setSquares(model.players[model.currentPlayer].selectedPiece, color);
         model.players[model.currentPlayer].removePiece(model.players[model.currentPlayer].selectedPiece);
         model.players[model.currentPlayer].unclickPieces();
@@ -133,7 +137,10 @@ export function movePieceToBoard(model) {
         nextPlayer(model);
         return true;
     } else {
-        model.players[model.currentPlayer].selectedPiece = pieceMem;
+        model.unHoverPieces();
+        model.players[model.currentPlayer].selectedPiece.sendToSelectArea()
+        model.players[model.currentPlayer].unclickPieces();
+        
         return false;
     }
 }

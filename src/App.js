@@ -3,26 +3,42 @@ import './App.css';
 import React from 'react';
 import Model from './model/model.js';
 import { config } from './model/config.js';
-import { redrawCanvas } from './boundary/boundary.js';
+import {redrawCanvas, resizeCanvas } from './boundary/boundary.js';
 import { layout } from './boundary/layout';
-import { BOXSIZE } from './boundary/boundary.js';
 import { movePiece, playerBounds, selectPiece, movePieceToBoard, rotatePiece, nextPlayer, clickPiece, dragBounds, flipPiece } from './controller/controller';
 import rotateLeft from './assets/rotate.left.svg';
 import rotateRight from './assets/rotate.right.svg';
-import nextArrow from './assets/arrowshape.right.svg';
-import prevArrow from './assets/arrowshape.left.svg';
-import { click } from '@testing-library/user-event/dist/click';
 
 
 function App() {
   const [model] = React.useState(new Model(config));
   const [redraw, forceRedraw] = React.useState(0);    
   const canvasRef = React.useRef(null);  
-  
+
+  const [dimensions, setDimensions] = React.useState({
+    height: window.innerHeight,
+    width: window.innerWidth
+  })
+
+  React.useEffect(() => {
+    function handleResize() {
+      setDimensions({
+        height: window.innerHeight,
+        width: window.innerWidth
+      })
+    }
+    window.addEventListener('resize', handleResize);
+
+    return _ => {
+      window.removeEventListener('resize', handleResize);
+    }
+  })
+
 
   React.useEffect(() => {
     redrawCanvas(model, canvasRef.current);
   }, [model, redraw]);
+
 
   const upHandler = (event) => {
     if (model.players[model.currentPlayer].clickedPiece && playerBounds(model, event)) {
@@ -127,8 +143,8 @@ function App() {
         <canvas tabIndex="1"
           className="App-canvas"
           ref ={canvasRef}
-          width={2400}
-          height={2400}
+          width={dimensions.width}
+          height={dimensions.height}
           style={layout.canvas}
           onMouseDown={downHandler}
           onMouseUp={upHandler}
@@ -137,6 +153,8 @@ function App() {
       </div>
     </div>
   );
+
+
 }
 
 export default App;

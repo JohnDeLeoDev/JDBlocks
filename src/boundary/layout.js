@@ -3,20 +3,26 @@ export const layout = {
         backgroundColor: "white",
         height: "100vh",
         width: "100vw",
+        maxWidth: "100vw",
+        maxHeight: "100vh",
         margin: "auto",
     },
 
     canvasArea: {
-        height: "100vh",
-        width: "100vw",
+        maxHeight: "100%",
+        maxWidth: "100%",
+        width: "100%",
         margin: "auto",
-    },
-
-    canvas: {
-        margin: "auto",
-    },
-
+    },    
     
+    canvas: {
+        display: "flex",
+        padding: 0,
+        margin: "auto",
+        maxWidth: "100%",
+        maxHeight: "100%",
+        justifyContent: "center",
+    },
 
     players: {
         display: "flex",

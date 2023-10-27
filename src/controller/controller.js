@@ -8,14 +8,13 @@ export function clickPiece(model, event) {
     model.players[model.currentPlayer].unclickPieces();
     let x = event.pageX - CLICKOFFSETX;
     let y = event.pageY - CLICKOFFSETY;
-    console.log(x, y);
-
     if (!dragBounds(model, event)) {
         for (let i = 0; i < model.players[model.currentPlayer].pieces.length; i++) {
             for (let j = 0; j < model.players[model.currentPlayer].pieces[i].shape.length; j++) {
                 if (model.players[model.currentPlayer].pieces[i].shape[j].clickShape(x, y)) {
                     model.players[model.currentPlayer].pieces[i].shape[j].clickShape(x, y);
                     model.players[model.currentPlayer].clickPiece(i);
+                    console.log("piece clicked")
                     return true;
                 }
             }
@@ -37,6 +36,7 @@ export function clickPiece(model, event) {
 export function selectPiece(model, event) {
     let x = event.pageX - CLICKOFFSETX;
     let y = event.pageY - CLICKOFFSETY;
+    console.log(dragBounds(model, event));
     if (!dragBounds(model, event)) {
         for (let i = 0; i < model.players[model.currentPlayer].pieces.length; i++) {
             for (let j = 0; j < model.players[model.currentPlayer].pieces[i].shape.length; j++) {
@@ -88,18 +88,22 @@ export function playerBounds(model, event) {
     let y = event.pageY - CLICKOFFSETY;
     if (model.currentPlayer === 0) {
         if (x > PLAYERBOUNDS[0][0] && x < PLAYERBOUNDS[0][1] && y > PLAYERBOUNDS[0][2] && y < PLAYERBOUNDS[0][3]) {
+            console.log("player bounds 1");
             return true;
         }
     } else if (model.currentPlayer === 1) {
         if (x > PLAYERBOUNDS[1][0] && x < PLAYERBOUNDS[1][1] && y > PLAYERBOUNDS[1][2] && y < PLAYERBOUNDS[1][3]) {
+            console.log("player bounds 2");
             return true;
         }
     } else if (model.currentPlayer === 2) {
         if (x > PLAYERBOUNDS[2][0] && x < PLAYERBOUNDS[2][1] && y > PLAYERBOUNDS[2][2] && y < PLAYERBOUNDS[2][3]) {
+            console.log("player bounds 3");
             return true;
         }
     } else if (model.currentPlayer === 3) {
         if (x > PLAYERBOUNDS[3][0] && x < PLAYERBOUNDS[3][1] && y > PLAYERBOUNDS[3][2] && y < PLAYERBOUNDS[3][3]) {
+            console.log("player bounds 4");
             return true;
         }
     }
@@ -138,7 +142,7 @@ export function movePieceToBoard(model) {
         return true;
     } else {
         model.unHoverPieces();
-        model.players[model.currentPlayer].selectedPiece.sendToSelectArea()
+        model.players[model.currentPlayer].selectedPiece.selectPiece();
         model.players[model.currentPlayer].unclickPieces();
         
         return false;

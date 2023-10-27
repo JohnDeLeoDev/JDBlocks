@@ -8,6 +8,8 @@ import { layout } from './boundary/layout';
 import { movePiece, playerBounds, selectPiece, movePieceToBoard, rotatePiece, nextPlayer, clickPiece, dragBounds, flipPiece } from './controller/controller';
 import rotateLeft from './assets/rotate.left.svg';
 import rotateRight from './assets/rotate.right.svg';
+import fliphorizontal from './assets/flip.horizontal.svg';
+import flipvertical from './assets/flip.vertical.svg';
 
 
 function App() {
@@ -106,37 +108,32 @@ function App() {
             Skip Turn
           </button>
         </div>
-        <div>
-
-          < div>
-            <button style={layout.flipHorizontal} onClick={() => {
-              flipPiece(model, false);
-              forceRedraw(redraw + 1);
-            }}>
-              Flip Horizontal
-            </button>
-            <button style={layout.flipVertical} onClick={() => {
-              flipPiece(model, true);
-              forceRedraw(redraw + 1);
-            }}>
-              Flip Vertical
-            </button>
-          </div>
-          <div style={layout.rotate}>
-            <p style={layout.rotateText}>Rotate piece:</p>
-            <button style={layout.rotateButtons} data-testid="counterclockwise" onClick={() => {
-                        rotatePiece(model, false);
-                        forceRedraw(redraw + 1);
-            }}>
-              <img style={layout.rotateSVG} src={rotateLeft} alt="Rotate Counterclockwise"/>
-            </button>
-            <button style={layout.rotateButtons} data-testid="clockwise" onClick={() => {
-              rotatePiece(model, true);
-              forceRedraw(redraw + 1);
-            }}>
-              <img style={layout.rotateSVG} src={rotateRight} alt="Rotate Clockwise"/>
-            </button>
-          </div>
+        <div style={layout.pieceOrientationArea}>
+          <p style={layout.pieceOrientationText}>Piece Orientation:</p>
+          <button style={layout.pieceOrientation} onClick={() => {
+            flipPiece(model, false);
+            forceRedraw(redraw + 1);
+          }}>
+            <img style={layout.flipSVG} src={fliphorizontal} alt="Flip Horizontal"/>
+          </button>
+          <button style={layout.pieceOrientation} onClick={() => {
+            flipPiece(model, true);
+            forceRedraw(redraw + 1);
+          }}>
+            <img style={layout.flipSVG} src={flipvertical} alt="Flip Vertical"/>
+          </button>
+          <button style={layout.pieceOrientation} data-testid="counterclockwise" onClick={() => {
+                      rotatePiece(model, false);
+                      forceRedraw(redraw + 1);
+          }}>
+            <img style={layout.pieceOrientationSVG} src={rotateLeft} alt="Rotate Counterclockwise"/>
+          </button>
+          <button style={layout.pieceOrientation} data-testid="clockwise" onClick={() => {
+            rotatePiece(model, true);
+            forceRedraw(redraw + 1);
+          }}>
+            <img style={layout.pieceOrientationSVG} src={rotateRight} alt="Rotate Clockwise"/>
+          </button>
         </div>
       </div>
       <div style={layout.canvasArea}>

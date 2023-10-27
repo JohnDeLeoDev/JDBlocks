@@ -6,6 +6,7 @@ export default class Model {
         this.board = this.createBoard();
         this.playerColors = this.config.playerColors;
         this.playerColorsFaded = this.config.playerColorsFaded;
+        this.hoverColor = this.config.hoverColor;
         this.numPlayers = this.config.numPlayers;
         this.players = []
         for (let i = 0; i < this.numPlayers; i++) {
@@ -290,16 +291,6 @@ export default class Model {
                 console.log("No pieces remaining. Game over.")
                 return true;
             }
-            for (let j = 0; j < this.players[i].pieces.length; j++) {
-                for (let k = BOARDINDENTX; k < BOARDINDENTX + (this.board.numCols * SPACING); k += SPACING) {
-                    for (let l = BOARDINDENTY; l < BOARDINDENTY + (this.board.numRows * SPACING); l += SPACING) {
-                        if (this.checkSquaresByCoord([k, l], this.players[i].pieces[j].shape)) {
-                            console.log(k, l, this.players[i].pieces[j])
-                            return false;
-                        }
-                    }
-                }
-            }
         }
         this.gameOver = true;
         console.log("No moves remaining. Game over.")
@@ -451,30 +442,62 @@ export class Piece {
         this.clicked = false;
         this.selected = false;
         this.shape = this.createShapes(shape, coord, this.player);
+        this.bounds = this.calcBounds();
         this.centerPoint = this.calcCenterPoint();
     }
 
+    calcBounds() {
+        let xMax = null;
+        let xMin = null;
+        let yMax = null;
+        let yMin = null;
 
+        for (let i = 0; i < this.shape.length; i++) {
+            if (xMax === null || this.shape[i].bounds[1] > xMax) {
+                xMax = this.shape[i].bounds[1];
+            }
+            if (xMin === null || this.shape[i].bounds[1] < xMin) {
+                xMin = this.shape[i].bounds[0];
+            }
+            if (yMax === null || this.shape[i].bounds[3] > yMax) {
+                yMax = this.shape[i].bounds[3];
+            }
+            if (yMin === null || this.shape[i].bounds[2] < yMin) {
+                yMin = this.shape[i].bounds[2];
+            }
+        }
 
-    changeCenterPoint() {
+        return [xMin, xMax, yMin, yMax];
+    }
+
+    updatePiece() {
+        this.updateBounds();
+        this.updateCenterPoint();
+    }
+
+    updateCenterPoint() {
         this.centerPoint = this.calcCenterPoint();
     }
 
+    updateBounds() {
+        this.bounds = this.calcBounds();
+    }
+
+    moveOnCenterPoint(point) {
+        this.updatePiece();
+        let diffX = point[0] - this.centerPoint[0];
+        let diffY = point[1] - this.centerPoint[1];
+        this.moveDistance(diffX, diffY);
+        this.updatePiece();
+        if (this.centerPoint[0] !== point[0] || this.centerPoint[1] !== point[1]) {
+            this.moveOnCenterPoint(point);
+        }
+    }
 
     calcCenterPoint() {
-        let x = 0;
-        let y = 0;
-        for (let i = 0; i < this.shape.length; i++) {
-            x += this.shape[i].shapeCoords[0];
-            y += this.shape[i].shapeCoords[1];
-        }
-        return [x / this.shape.length, y / this.shape.length];
-    }
-
-    sendToSelectArea() {
-        for (let i = 0; i < this.shape.length; i++) {
-            this.shape[i].sendToSelectArea();
-        }
+        let x = (this.bounds[0] + this.bounds[1]) / 2;
+        let y = (this.bounds[2] + this.bounds[3]) / 2;
+        return [x, y];
     }
 
     clickPiece() {
@@ -487,7 +510,7 @@ export class Piece {
 
     selectPiece() {
         this.selected = true;
-        this.moveWholePiece(SELECTEDPIECELOCATION);
+        this.moveOnCenterPoint(SELECTEDPIECELOCATION);
     }
 
     unselectPiece() {
@@ -497,23 +520,13 @@ export class Piece {
         }
     }
 
-    moveWholePiece(location) {
-        this.coord = location;
-        for (let i = 0; i < this.shape.length; i++) {
-            this.shape[i].shapeCoords = this.shape[i].calcShapeCoordsSelected(this.coord);
-            this.shape[i].bounds = this.shape[i].calcShapeBounds();
-        }
-        this.calcCenterPoint();
-    }
-
     movePiece(location) {
         var diffX = location[0] - this.shape[0].shapeCoords[0];
         var diffY = location[1] - this.shape[0].shapeCoords[1];
         for (let i = 0; i < this.shape.length; i++) {
             this.shape[i].moveShape(diffX, diffY);
         }
-        this.calcCenterPoint();
-
+        this.updatePiece();
     }
 
     createShapes(shape, coord) {
@@ -532,13 +545,14 @@ export class Piece {
             if (direction) {
                 this.shape[i].shapeCoords = [base[0] + x, base[1] - y];
                 this.shape[i].selectedLocation = [base[0] + x, base[1] - y];
-                this.shape[i].calcShapeBounds();
             } else {
                 this.shape[i].shapeCoords = [base[0] - x, base[1] + y];
                 this.shape[i].selectedLocation = [base[0] - x, base[1] + y];
-                this.shape[i].calcShapeBounds();
             }
         }
+        this.updatePiece();
+        this.moveOnCenterPoint(SELECTEDPIECELOCATION);
+        console.log(this.centerPoint);
     }
 
 
@@ -549,20 +563,20 @@ export class Piece {
             let y = this.shape[i].shapeCoords[1] - base[1];
             if (direction) {
                 this.shape[i].shapeCoords = [base[0] - y, base[1] + x];
-                this.shape[i].selectedLocation = [base[0] - y, base[1] + x];
             } else {
                 this.shape[i].shapeCoords = [base[0] + y, base[1] - x];
-                this.shape[i].selectedLocation = [base[0] + y, base[1] - x];
-
             }
         }
+        this.updatePiece();
+        this.moveOnCenterPoint(SELECTEDPIECELOCATION);
+        console.log(this.centerPoint); 
     }
 
     moveDistance(diffX, diffY) {
         for (let i = 0; i < this.shape.length; i++) {
             this.shape[i].moveShape(diffX, diffY);
         }
-        this.calcCenterPoint();
+        this.updatePiece();
     }
     
 }
@@ -583,22 +597,21 @@ export class PieceShape {
         }
         this.startingCoords = this.calcShapeCoords(coord);
         this.shapeCoords = this.calcShapeCoords(coord);
-        this.testShapeCoords = this.calcTestShapeCoords();
         this.shapeSize = BOXSIZE;
         this.bounds = this.calcShapeBounds();
-        this.selectedLocation = this.calcSelectedLocation();
         this.clicked = false;
     }
 
-    sendToSelectArea() {
-        this.shapeCoords = this.selectedLocation;
-        this.calcShapeBounds();
+    updateShape() {
+        this.updateBounds();
     }
 
-    calcSelectedLocation() {
-        let coords = [];
-        coords.push(SELECTEDPIECELOCATION[0] + (this.shape[0] * SPACING), SELECTEDPIECELOCATION[1] +  (this.shape[1]) * SPACING);
-        return coords;
+    updateShapeCoords(coord) {
+        this.shapeCoords = this.calcShapeCoords(coord);
+    }
+
+    updateBounds() {
+        this.bounds = this.calcShapeBounds();
     }
 
     calcShapeBounds() {
@@ -608,32 +621,6 @@ export class PieceShape {
         let yBottom = this.shapeCoords[1] + (this.shapeSize / 2);
 
         return [xLeft, xRight, yTop, yBottom];
-    }
-
-    updateShape(coord) {
-        this.shapeCoords = this.calcShapeCoords(coord);
-    }
-
-    calcShapeCoordsSelected(coord) {
-        let coords = [];
-        coords.push(coord[0] + (this.shape[0] * SPACING), coord[1] +  (this.shape[1]) * SPACING);
-        return coords;
-    }
-
-    calcTestShapeCoords() {
-        let coords = [];
-        for (let i = BOARDINDENTX; i < BOARDINDENTX + (20 * SPACING); i += SPACING) {
-            for (let j = BOARDINDENTY; j < BOARDINDENTY + (20 * SPACING); j += SPACING) {
-                coords.push([i, j]);
-            }
-        }
-        return coords;
-    }
-
-    calcCenterShapeCoords(coord) {
-        let coords = [];
-        coords.push(coord[0] + (this.shape[0] * SPACING), coord[1] +  (this.shape[1]) * SPACING);
-        return coords;
     }
 
     calcShapeCoords(coord) {
@@ -658,7 +645,7 @@ export class PieceShape {
 
     moveShape(diffX, diffY) {
         this.shapeCoords = [this.shapeCoords[0] + diffX, this.shapeCoords[1] + diffY];
-        this.calcShapeBounds();
+        this.updateShape();
     }
 }
 

@@ -1,16 +1,33 @@
-export const BOXSIZE = 30;
-export const SPACING = 30;
-export const BOARDINDENTX = 575;
-export const BOARDINDENTY = 250;
-export const PLAYERBOXSIZE = 550;
-export const PLAYER1 = [-600, 0]; //grey
-export const PLAYER3 = [-600, PLAYERBOXSIZE + 10]; //blue
-export const PLAYER2 = [610, 10]; //green
-export const PLAYER4 = [610, PLAYERBOXSIZE + 10]; //Yellow
-export const PLAYERINDENT = 5;
-export const SELECTEDPIECELOCATION = [860, 120];
-export const DRAGBOUNDS = [BOARDINDENTX, BOARDINDENTX+600, 0, 1200];
-export const PLAYERBOUNDS = [[0, PLAYERBOXSIZE, 0, PLAYERBOXSIZE],[1200, 1200 + PLAYERBOXSIZE, 0, PLAYERBOXSIZE],[0, PLAYERBOXSIZE, PLAYERBOXSIZE + 2*PLAYERINDENT, 2*PLAYERBOXSIZE + 2*PLAYERINDENT],[1200, 1200 + PLAYERBOXSIZE, PLAYERBOXSIZE + 2*PLAYERINDENT, 2*PLAYERBOXSIZE + 2*PLAYERINDENT]];
+
+export var CANVASWIDTH = 1850;
+export var CANVASHEIGHT = 1200;
+export var PLAYERBOXSIZE = CANVASWIDTH * .31;
+export var BOARDSIZE = CANVASWIDTH * 0.34;
+export var BOXSIZE = BOARDSIZE / 20;
+export var SPACING = BOXSIZE;
+export var BOARDINDENT = 25
+export var BOARDINDENTX = PLAYERBOXSIZE + BOARDINDENT;
+export var BOARDINDENTY = 250;
+
+
+export var PLAYER1 = [-600, 20]; //grey
+export var PLAYER3 = [-600, PLAYERBOXSIZE + 20]; //blue
+export var PLAYER2 = [650, 20]; //green
+export var PLAYER4 = [650, PLAYERBOXSIZE + 20]; //Yellow
+export var PLAYERINDENT = 5;
+export var RIGHTSIDEPLAYER = PLAYERBOXSIZE + BOARDINDENT + BOARDSIZE + BOARDINDENT;
+export var DRAGBOUNDS = [BOARDINDENTX, BOARDINDENTX + BOARDSIZE, 0, RIGHTSIDEPLAYER];
+
+export var PLAYER1BOUNDS = [0, PLAYERBOXSIZE, 0, PLAYERBOXSIZE];
+export var PLAYER2BOUNDS = [RIGHTSIDEPLAYER, RIGHTSIDEPLAYER + PLAYERBOXSIZE, 0, PLAYERBOXSIZE];
+export var PLAYER3BOUNDS = [0, PLAYERBOXSIZE, PLAYERBOXSIZE + 2*PLAYERINDENT, 2*PLAYERBOXSIZE + 2*PLAYERINDENT];
+export var PLAYER4BOUNDS = [RIGHTSIDEPLAYER, RIGHTSIDEPLAYER + PLAYERBOXSIZE, PLAYERBOXSIZE + 2*PLAYERINDENT, 2*PLAYERBOXSIZE + 2*PLAYERINDENT];
+export var PLAYERBOUNDS = [PLAYER1BOUNDS, PLAYER2BOUNDS, PLAYER3BOUNDS, PLAYER4BOUNDS];
+
+export var SELECTEDBOX = [BOARDINDENTX, 0 + 5, BOARDSIZE, BOARDINDENTY - 10];
+export var SELECTEDPIECELOCATION = [(SELECTEDBOX[0] + (SELECTEDBOX[0] + SELECTEDBOX[2]))/2 - 10, (SELECTEDBOX[1] + (SELECTEDBOX[1] + SELECTEDBOX[3]))/2 - 20];
+
+
 
 // playerColors: ['rgba(128,128,128,1)', 'rgba(0,0,255,1)', 'rgba(0,128,0,1)', 'rgba(255,255,0,1)']
 
@@ -31,8 +48,12 @@ export function drawBoard(ctx, model) {
     ctx.width = window.innerWidth;
     ctx.height = window.innerHeight;
 
+
     ctx.beginPath();
-    ctx.strokeRect(0, 0, ctx.width, ctx.height);    
+    //Canvas area
+    ctx.strokeRect(0, 0, CANVASWIDTH, CANVASHEIGHT);  
+
+    //Selected piece area
     if (model.players[model.currentPlayer].selectedPiece) {
         ctx.strokeStyle = "red";
         ctx.lineWidth = 6;
@@ -40,20 +61,18 @@ export function drawBoard(ctx, model) {
         ctx.strokeStyle = "black";
         ctx.lineWidth = 2;
     }
-    ctx.strokeRect(780, 50, 175, 175);
+    ctx.strokeRect(SELECTEDBOX[0], SELECTEDBOX[1], SELECTEDBOX[2], SELECTEDBOX[3]);
 
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 2;
-
-    ctx.strokeRect(BOARDINDENTX, 0, 600, 1200);
+    // Drag area
     ctx.strokeStyle = "black";
     ctx.fillStyle = "grey";
-
+    ctx.lineWidth = 2;
+    // Board area
     for (let i = 0; i < model.board.boardSquares.length; i++) {
         ctx.fillStyle = "white";
         let shape = computeSquare(model.board.boardSquares[i]);
         if (model.board.boardSquares[i].checkHovered() && model.board.boardSquares[i].checkOpen()) {
-            ctx.fillStyle = "red";
+            ctx.fillStyle = model.hoverColor;
         } else if (model.board.boardSquares[i].checkOpen()) {
             if (model.board.boardSquares[i].row === 0 && model.board.boardSquares[i].col === 0) {
                 ctx.fillStyle = "red";
@@ -73,8 +92,11 @@ export function drawBoard(ctx, model) {
         ctx.fillRect(shape.squareCoords[0], shape.squareCoords[1], BOXSIZE, BOXSIZE);
         ctx.strokeRect(shape.squareCoords[0], shape.squareCoords[1], BOXSIZE, BOXSIZE);
     }
+
+    //player areas
     ctx.lineWidth = 2;
     for (let i = 0; i < model.players.length; i++) {
+        //player 1
         if (i === 0) {
             if (model.players[i] === model.players[model.currentPlayer]) {
                 ctx.lineWidth = 6;
@@ -87,6 +109,7 @@ export function drawBoard(ctx, model) {
             ctx.fillRect(PLAYERINDENT, PLAYERINDENT, PLAYERBOXSIZE, PLAYERBOXSIZE);
             ctx.strokeRect(PLAYERINDENT, PLAYERINDENT, PLAYERBOXSIZE, PLAYERBOXSIZE);
         } else if (i === 1) {
+            //player 2
             if (model.players[i] === model.players[model.currentPlayer]) {
                 ctx.lineWidth = 6;
                 ctx.strokeStyle = "red";
@@ -95,8 +118,8 @@ export function drawBoard(ctx, model) {
                 ctx.strokeStyle = "black";
                 ctx.fillStyle = model.players[i].fadedColor;
             }
-            ctx.fillRect(1200 + PLAYERINDENT, PLAYERINDENT, PLAYERBOXSIZE, PLAYERBOXSIZE);
-            ctx.strokeRect(1200 + PLAYERINDENT, PLAYERINDENT, PLAYERBOXSIZE, PLAYERBOXSIZE);
+            ctx.fillRect(RIGHTSIDEPLAYER, PLAYERINDENT, PLAYERBOXSIZE, PLAYERBOXSIZE);
+            ctx.strokeRect(RIGHTSIDEPLAYER, PLAYERINDENT, PLAYERBOXSIZE, PLAYERBOXSIZE);
         } else if (i === 2) {
             if (model.players[i] === model.players[model.currentPlayer]) {
                 ctx.lineWidth = 6;
@@ -117,9 +140,11 @@ export function drawBoard(ctx, model) {
                 ctx.strokeStyle = "black";
                 ctx.fillStyle = model.players[i].fadedColor;
             }
-            ctx.fillRect(1200 + PLAYERINDENT, PLAYERBOXSIZE + 2*PLAYERINDENT, PLAYERBOXSIZE, PLAYERBOXSIZE);
-            ctx.strokeRect(1200 + PLAYERINDENT, PLAYERBOXSIZE + 2*PLAYERINDENT, PLAYERBOXSIZE, PLAYERBOXSIZE);        
+            ctx.fillRect(RIGHTSIDEPLAYER, PLAYERBOXSIZE + 2*PLAYERINDENT, PLAYERBOXSIZE, PLAYERBOXSIZE);
+            ctx.strokeRect(RIGHTSIDEPLAYER, PLAYERBOXSIZE + 2*PLAYERINDENT, PLAYERBOXSIZE, PLAYERBOXSIZE);        
         }
+
+        //Pieces
         ctx.lineWidth = 2;
         
         for (let j = 0; j < model.players[i].pieces.length; j++) {

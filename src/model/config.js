@@ -3,6 +3,7 @@ export const config = {
     numCols: 20,
     playerColors: ['rgba(128,128,128,1)', 'rgba(0,0,255,1)', 'rgba(0,128,0,1)', 'rgba(255,255,0,1)'],
     playerColorsFaded: ['rgba(128,128,128,0.5)', 'rgba(0,0,255,0.5)', 'rgba(0,128,0,0.5)', 'rgba(255,255,0,0.5)'],
+    hoverColor: 'rgba(255,0,0,0.5)',
     totalPieces: 20,
     numPlayers: 4, 
 

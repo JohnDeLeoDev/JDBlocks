@@ -53,23 +53,24 @@ export const layout = {
 
     buttonsArea: {
         display: "flex",
-        justifyContent: "center",
+        justifyContent: "space-between",
         margin: "auto",
+        padding: "50px",
     },
 
-    rotateText: {
+    pieceOrientationText: {
         margin: "20px",
         fontWeight: "bold",
         fontSize: "30px",
     },
 
-    rotateButtons: {
+    pieceOrientation: {
         margin: "20px",
         height: "50px",
         width: "50px",
     },
 
-    rotateSVG: {
+    pieceOrientationSVG: {
         color: "black",
         width: "30px",
         height: "30px",

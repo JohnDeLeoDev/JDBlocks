@@ -2,7 +2,7 @@ import {DRAGBOUNDS, PLAYERBOUNDS} from '../boundary/boundary.js';
 
 
 export const CLICKOFFSETX = 15;
-export const CLICKOFFSETY = 285;
+export const CLICKOFFSETY = 325;
 
 export function clickPiece(model, event) {
     model.players[model.currentPlayer].unclickPieces();
@@ -65,12 +65,21 @@ export function movePiece(model, event) {
     let y = event.pageY - CLICKOFFSETY;
     if (model.players[model.currentPlayer].clickedPiece !== null) {
         for (let i = 0; i < model.players[model.currentPlayer].selectedPiece.shape.length; i++) {
+            model.hoverPiece(model.players[model.currentPlayer].selectedPiece);
+            model.players[model.currentPlayer].selectedPiece.hoveringPiece();
             model.players[model.currentPlayer].selectedPiece.movePiece([x, y]);
             if (model.checkSquares(model.players[model.currentPlayer].selectedPiece) && model.checkMoveAllowed(model.players[model.currentPlayer].selectedPiece)) {
-                model.hoverPiece(model.players[model.currentPlayer].selectedPiece);
+                model.hovMoveAllowed(model.players[model.currentPlayer].selectedPiece);
+                model.players[model.currentPlayer].selectedPiece.hovAllowed();
+            } else {
+                model.hovNotAllowed(model.players[model.currentPlayer].selectedPiece);
+                model.players[model.currentPlayer].selectedPiece.hovNotAllowed();
             }
         }
+    } else {
+        model.unHoverPieces();
     }
+
 }
 
 export function dragBounds(model, event) {
@@ -134,7 +143,7 @@ export function movePieceToBoard(model) {
     if (model.checkSquares(model.players[model.currentPlayer].selectedPiece) && model.checkMoveAllowed(model.players[model.currentPlayer].selectedPiece)) {
         model.unHoverPieces();
         model.setSquares(model.players[model.currentPlayer].selectedPiece, color);
-        model.players[model.currentPlayer].removePiece(model.players[model.currentPlayer].selectedPiece);
+        model.players[model.currentPlayer].playPiece(model.players[model.currentPlayer].selectedPiece);
         model.players[model.currentPlayer].unclickPieces();
         model.players[model.currentPlayer].unselectPieces();
         model.players[model.currentPlayer].increaseMoves();

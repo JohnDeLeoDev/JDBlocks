@@ -56,7 +56,7 @@ export function drawBoard(ctx, model) {
     //Selected piece area
     if (model.players[model.currentPlayer].selectedPiece) {
         ctx.strokeStyle = "red";
-        ctx.lineWidth = 6;
+        ctx.lineWidth = 4;
     } else {
         ctx.strokeStyle = "black";
         ctx.lineWidth = 2;
@@ -71,24 +71,19 @@ export function drawBoard(ctx, model) {
     for (let i = 0; i < model.board.boardSquares.length; i++) {
         ctx.fillStyle = "white";
         let shape = computeSquare(model.board.boardSquares[i]);
-        if (model.board.boardSquares[i].checkHovered() && model.board.boardSquares[i].checkOpen()) {
-            ctx.fillStyle = model.hoverColor;
-        } else if (model.board.boardSquares[i].checkOpen()) {
-            if (model.board.boardSquares[i].row === 0 && model.board.boardSquares[i].col === 0) {
-                ctx.fillStyle = "red";
-            } else if (model.board.boardSquares[i].row === 0 && (model.board.boardSquares[i].col === ( model.board.numCols - 1))) {
-                ctx.fillStyle = "red";
-            } else if ((model.board.boardSquares[i].row === (model.board.numRows - 1)) && model.board.boardSquares[i].col === 0) {
-                ctx.fillStyle = "red";
-            } else if ((model.board.boardSquares[i].row === model.board.numRows - 1) && (model.board.boardSquares[i].col === model.board.numCols - 1)) {
-                ctx.fillStyle = "red";
-            } else {
-                ctx.fillStyle = "white";
-            }
-        } else {
+        if (!model.board.boardSquares[i].isOpen) {
             ctx.fillStyle = model.board.boardSquares[i].color;
-        }
-
+        } else if (model.board.boardSquares[i].corner && !model.board.boardSquares[i].hovered) {
+            ctx.fillStyle = "grey";
+        } else if (model.board.boardSquares[i].checkAllowed() && model.board.boardSquares[i].hovered) {
+            ctx.fillStyle = model.movePossibleColor;
+        } else if (model.board.boardSquares[i].hovered) {
+            ctx.fillStyle = model.hoverColor;
+        } else if (!model.board.boardSquares[i].isOpen) {
+            ctx.fillStyle = model.board.boardSquares[i].color;
+        } else {
+            ctx.fillStyle = "white";
+        } 
         ctx.fillRect(shape.squareCoords[0], shape.squareCoords[1], BOXSIZE, BOXSIZE);
         ctx.strokeRect(shape.squareCoords[0], shape.squareCoords[1], BOXSIZE, BOXSIZE);
     }
@@ -99,7 +94,7 @@ export function drawBoard(ctx, model) {
         //player 1
         if (i === 0) {
             if (model.players[i] === model.players[model.currentPlayer]) {
-                ctx.lineWidth = 6;
+                ctx.lineWidth = 4;
                 ctx.strokeStyle = "red";
                 ctx.fillStyle = model.players[i].fadedColor;
             } else {
@@ -111,7 +106,7 @@ export function drawBoard(ctx, model) {
         } else if (i === 1) {
             //player 2
             if (model.players[i] === model.players[model.currentPlayer]) {
-                ctx.lineWidth = 6;
+                ctx.lineWidth = 4;
                 ctx.strokeStyle = "red";
                 ctx.fillStyle = model.players[i].fadedColor;
             } else {
@@ -122,7 +117,7 @@ export function drawBoard(ctx, model) {
             ctx.strokeRect(RIGHTSIDEPLAYER, PLAYERINDENT, PLAYERBOXSIZE, PLAYERBOXSIZE);
         } else if (i === 2) {
             if (model.players[i] === model.players[model.currentPlayer]) {
-                ctx.lineWidth = 6;
+                ctx.lineWidth = 4;
                 ctx.strokeStyle = "red";
                 ctx.fillStyle = model.players[i].fadedColor;
             } else {
@@ -133,7 +128,7 @@ export function drawBoard(ctx, model) {
             ctx.strokeRect(PLAYERINDENT, PLAYERBOXSIZE + 2*PLAYERINDENT, PLAYERBOXSIZE, PLAYERBOXSIZE);
         } else if (i === 3) {
             if (model.players[i] === model.players[model.currentPlayer]) {
-                ctx.lineWidth = 6;
+                ctx.lineWidth = 4;
                 ctx.strokeStyle = "red";
                 ctx.fillStyle = model.players[i].fadedColor;
             } else {
@@ -152,23 +147,38 @@ export function drawBoard(ctx, model) {
                 let piece = computePiece(model.players[i].pieces[j]);
                 ctx.fillStyle = model.players[i].pieces[j].color;
                 ctx.strokeStyle = "black";
-                if (model.players[i].pieces[j].clicked === true) {
-                    ctx.fillStyle = model.players[model.currentPlayer].pieces[i].color;
+                if (model.players[i].pieces[j].played === true) {
+                    ctx.fillStyle = "grey";
+                    ctx.strokeStyle = "grey";
+                    for (let j = 0; j < piece.shapeCoords.length; j++) {
+                        ctx.fillRect(piece.shapeCoords[j][0], piece.shapeCoords[j][1], BOXSIZE, BOXSIZE);
+                        ctx.strokeRect(piece.shapeCoords[j][0], piece.shapeCoords[j][1], BOXSIZE, BOXSIZE);
+                    }
+                } else if (model.players[i].pieces[j].hovMoveAllowed === true ){
+                    ctx.strokeStyle = model.movePossibleColor;
+                    for (let j = 0; j < piece.shapeCoords.length; j++) {
+                        ctx.fillRect(piece.shapeCoords[j][0], piece.shapeCoords[j][1], BOXSIZE, BOXSIZE);
+                        ctx.strokeRect(piece.shapeCoords[j][0], piece.shapeCoords[j][1], BOXSIZE, BOXSIZE);
+                    }
+                } else if (model.players[i].pieces[j].clicked === true) {
                     ctx.strokeStyle = "red";
                     for (let j = 0; j < piece.shapeCoords.length; j++) {
                         ctx.fillRect(piece.shapeCoords[j][0], piece.shapeCoords[j][1], BOXSIZE, BOXSIZE);
                         ctx.strokeRect(piece.shapeCoords[j][0], piece.shapeCoords[j][1], BOXSIZE, BOXSIZE);
-                    }   
-                }  else {
+                    }
+                }   else {
+                    ctx.strokeStyle = "black";
                     for (let j = 0; j < piece.shapeCoords.length; j++) {
                         ctx.fillRect(piece.shapeCoords[j][0], piece.shapeCoords[j][1], BOXSIZE, BOXSIZE);
                         ctx.strokeRect(piece.shapeCoords[j][0], piece.shapeCoords[j][1], BOXSIZE, BOXSIZE);
-                    }  
+                    }
                 }
+                  
             }
         }
     }
 }
+
 
 export function computeSquare(square) {
     let c = square;

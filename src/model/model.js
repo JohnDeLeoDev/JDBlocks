@@ -8,6 +8,7 @@ export default class Model {
         this.playerColorsFaded = this.config.playerColorsFaded;
         this.hoverColor = this.config.hoverColor;
         this.numPlayers = this.config.numPlayers;
+        this.movePossibleColor = this.config.movePossibleColor;
         this.players = []
         for (let i = 0; i < this.numPlayers; i++) {
             this.players.push(new Player(i, this.playerColors[i], this.playerColorsFaded[i], this.createPieces(i, this.playerColors[i])));
@@ -15,6 +16,9 @@ export default class Model {
         this.currentPlayer = 0;
         this.gameOver = false;
     }
+
+    //check board  to see if current player can make a move at boardsquare
+
 
     reset(numPlayers) {
         this.board = this.createBoard();
@@ -74,27 +78,15 @@ export default class Model {
         return true;
     }
 
-    checkSquaresByCoord(coord, shape) {
+    checkSquaresByCoord(coord, boardSquare, piece) {
         let checkEach = [];
-        let tempShape = shape;
-        
-        for (let i = 0; i < tempShape.length; i++) {
-            for (let j = 0; j < this.board.boardSquares.length; j++) {
-                if (this.board.boardSquares[j].contains(tempShape[i].testShapeCoords[0], tempShape[i].testShapeCoords[1])) {
-                    checkEach.push(this.board.boardSquares[j].checkOpen());
-                }
-            }
-        }
-        if (checkEach.length === 0 || checkEach.length !== tempShape.length) {
+        let tempShape = piece;
+        tempShape.coord = coord;
+        if (this.checkCornerTouch(tempShape)) {
+            return true;
+        } else {
             return false;
         }
-        for (let i = 0; i < checkEach.length; i++) {
-            if (checkEach[i] === false) {
-                return false;
-            } 
-        }
-
-        return true;
     }
 
 
@@ -121,9 +113,32 @@ export default class Model {
         return true;
     }
 
+    hovMoveAllowed(piece) {
+        for (let i = 0; i < piece.shape.length; i++) {
+            for (let j = 0; j < this.board.boardSquares.length; j++) {
+                if (this.board.boardSquares[j].contains(piece.shape[i].shapeCoords[0], piece.shape[i].shapeCoords[1])) {
+                    this.board.boardSquares[j].moveAllowed = true;
+                }
+            }
+        }
+        return true;
+    }
+
+    hovNotAllowed(piece) {
+        for (let i = 0; i < piece.shape.length; i++) {
+            for (let j = 0; j < this.board.boardSquares.length; j++) {
+                if (this.board.boardSquares[j].contains(piece.shape[i].shapeCoords[0], piece.shape[i].shapeCoords[1])) {
+                    this.board.boardSquares[j].moveAllowed = false;
+                }
+            }
+        }
+        return true;
+    }
+
     unHoverPieces() {
         for (let i = 0; i < this.board.boardSquares.length; i++) {
             this.board.boardSquares[i].hovered = false;
+            this.board.boardSquares[i].MoveAllowed = false;
         }
     }
 
@@ -315,6 +330,11 @@ export class Player {
         this.clickedPiece = null;
     }
 
+    playPiece(piece) {
+        piece.playPiece();
+        this.playedPieces.push(piece);
+    }
+
     clickPiece(i) {
         this.clickedPiece = this.pieces[i];
         this.pieces[i].clickPiece();
@@ -381,22 +401,39 @@ export class Board {
     init() {
         for (var i = 0; i < this.numRows; i++) {
             for (var j = 0; j < this.numCols; j++) {
-                this.boardSquares.push(new BoardSquare(i, j, BOXSIZE, "white"));
+                if (i === 0 && j === 0) {
+                    this.boardSquares.push(new BoardSquare(i, j, BOXSIZE, true, true));
+                } else if (i === 0 && j === this.numCols - 1) {
+                    this.boardSquares.push(new BoardSquare(i, j, BOXSIZE, true, true));
+                } else if (i === this.numRows - 1 && j === 0) {
+                    this.boardSquares.push(new BoardSquare(i, j, BOXSIZE, true, true));
+                } else if (i === this.numRows - 1 && j === this.numCols - 1) {                    
+                    this.boardSquares.push(new BoardSquare(i, j, BOXSIZE, true, true)); 
+                } else {
+                    this.boardSquares.push(new BoardSquare(i, j, BOXSIZE, false, false));
+                }
             }
         }
     }    
 }
 
 export class BoardSquare {
-    constructor(row, col, size, color) {
+    constructor(row, col, size, movePossible, corner) {
         this.row = row;
         this.col = col;
         this.size = size;
-        this.color = color;
+        this.color = "white";
         this.isOpen = true;
         this.hovered = false;
+        this.moveAllowed = movePossible;
+        this.corner = corner;
         this.coord = this.calcSquareCoords();
         this.bounds = this.calcSquareBounds();
+
+    }
+
+    checkAllowed() {
+        return this.moveAllowed;
     }
 
     checkHovered() {
@@ -444,6 +481,30 @@ export class Piece {
         this.shape = this.createShapes(shape, coord, this.player);
         this.bounds = this.calcBounds();
         this.centerPoint = this.calcCenterPoint();
+        this.hovering = false;
+        this.hovMoveAllowed = false;
+        this.played = false;
+    }
+
+    hovAllowed() {
+        this.hovMoveAllowed = true;
+    }
+
+    hovNotAllowed() {
+        this.hovMoveAllowed = false;
+    }
+
+    playPiece() {
+        this.played = true;
+    }
+
+    hoveringPiece() {
+        this.hovering = true;
+    }
+
+    stopHoveringPiece() {
+        this.hovering = false;
+        this.hovMoveAllowed = false;
     }
 
     calcBounds() {
@@ -552,7 +613,6 @@ export class Piece {
         }
         this.updatePiece();
         this.moveOnCenterPoint(SELECTEDPIECELOCATION);
-        console.log(this.centerPoint);
     }
 
 
@@ -569,7 +629,6 @@ export class Piece {
         }
         this.updatePiece();
         this.moveOnCenterPoint(SELECTEDPIECELOCATION);
-        console.log(this.centerPoint); 
     }
 
     moveDistance(diffX, diffY) {

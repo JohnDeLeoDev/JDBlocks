@@ -3,155 +3,146 @@ import './App.css';
 import React from 'react';
 import Model from './model/model.js';
 import { config } from './model/config.js';
-import {redrawCanvas, resizeCanvas } from './boundary/boundary.js';
-import { layout } from './boundary/layout';
-import { movePiece, playerBounds, selectPiece, movePieceToBoard, rotatePiece, nextPlayer, clickPiece, dragBounds, flipPiece } from './controller/controller';
+import {Canvas, updateSizes} from './boundary/boundary.js';
+import { rotatePiece, nextPlayer, flipPiece } from './controller/controller';
 import rotateLeft from './assets/rotate.left.svg';
 import rotateRight from './assets/rotate.right.svg';
 import fliphorizontal from './assets/flip.horizontal.svg';
 import flipvertical from './assets/flip.vertical.svg';
-
+import menuButton from './assets/line.3.horizontal.svg';
+import {Menu, NewGame, Overlay} from './menu/menu.js';
+import {About} from './about.js';
+import {Rules} from './rules.js';
 
 function App() {
+  updateSizes();
   const [model] = React.useState(new Model(config));
   const [redraw, forceRedraw] = React.useState(0);    
-  const canvasRef = React.useRef(null);  
+  const [menu, setMenu] = React.useState(false);
+  const [newGameState, setNewGameState] = React.useState(false);
+  const [aboutState, setAboutState] = React.useState(false);
+  const [rulesState, setRulesState] = React.useState(false);
 
-  const [dimensions, setDimensions] = React.useState({
-    height: window.innerHeight,
-    width: window.innerWidth
-  })
-
-  React.useEffect(() => {
-    function handleResize() {
-      setDimensions({
-        height: window.innerHeight,
-        width: window.innerWidth
-      })
-    }
-    window.addEventListener('resize', handleResize);
-
-    return _ => {
-      window.removeEventListener('resize', handleResize);
-    }
-  })
-
-
-  React.useEffect(() => {
-    redrawCanvas(model, canvasRef.current);
-  }, [model, redraw]);
-
-
-  const upHandler = (event) => {
-    if (model.players[model.currentPlayer].clickedPiece && playerBounds(model, event)) {
-      selectPiece(model, event);
-      forceRedraw(redraw + 1);
-    }
-    if (model.players[model.currentPlayer].selectedPiece) {
-      movePieceToBoard(model);
-      forceRedraw(redraw + 1);
-    }
-    model.players[model.currentPlayer].unclickPieces();
-  }
-
-  const downHandler = (event) => {
-    clickPiece(model, event)
+  function handleRedraw() {
     forceRedraw(redraw + 1);
   }
 
-  const moveHandler = (event) => {
-    if (event.buttons === 1 && model.players[model.currentPlayer].clickedPiece && dragBounds(model, event) && model.players[model.currentPlayer].selectedPiece) {
-        movePiece(model, event);
-    }
-    forceRedraw(redraw + 1);
+  function handleCookie() {
+    localStorage.setItem('model', model);
   }
 
   function setNumPlayers(numPlayers) {
     model.setNumPlayers(numPlayers);
   }
 
+  function handleMenu() {
+    if (menu) {
+      setNewGameState(false);
+      setAboutState(false);
+      setRulesState(false);
+    }
+    setMenu(!menu);
+  }
+
+  React.useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+        document.body.style.overflow = "scroll"
+    };
+  }, []);
+
   return (
-    <div style={layout.Appmain} className="App">
-      <div style={layout.header}>
-        <div style={layout.brand}>
-          <h1 style={layout.brandText}>Blokus</h1>
+    <div className="Appmain">
+
+
+      <div className="header">
+        <div className="brand">
+          <h1 className="brandText">JDBlocks</h1>
         </div>
-        <div style={layout.players}>
-          <p style={layout.playerText}>Choose number of players:</p>
-          <div style={layout.playersButtons}>
-            <button onClick={() => {
-              setNumPlayers(2);
-              forceRedraw(redraw + 1);
-            }}>2</button>
-          </div>
-          <div style={layout.playersButtons}>
-            <button onClick={() => {
-              setNumPlayers(3);
-              forceRedraw(redraw + 1);
-            }}>3</button>
-          </div>
-          <div style={layout.playersButtons}>
-            <button onClick={() => {
-              setNumPlayers(4);
-              forceRedraw(redraw + 1);
-            }}>4</button>
-          </div>
-        </div>
+          <button className='menuButton'onClick={handleMenu}>
+            <img className="menuSVG" src={menuButton} alt="Menu"/>
+          </button>
       </div>
-      <div style={layout.buttonsArea}>
-        <div style={layout.playerSelect}>
-          <h1>Player {model.currentPlayer + 1}'s Turn</h1>
-          <button style={layout.skipTurn} onClick={() => {
-            nextPlayer(model);
-            forceRedraw(redraw + 1);
-          }}>
-            Skip Turn
-          </button>
+
+
+
+        <div className="gameArea">
+          {menu && <Overlay/>}
+
+          <div className="buttonsArea">
+            <div className="playerSelect">
+              <h1 className="playerSelectText">Player {model && model.currentPlayer + 1}'s Turn</h1>
+              <button className="skipTurn" onClick={() => {
+                nextPlayer(model);
+                forceRedraw(redraw + 1);
+              }}>
+                Skip Turn
+              </button>
+            </div>
+
+            <div className="pieceOrientationArea">
+              <h1 className="pieceOrientationText">Piece Orientation</h1>
+              <div className="pieceOrientationButtons">
+                <button className="pieceOrientation" onClick={() => {
+                  flipPiece(model, false);
+                  forceRedraw(redraw + 1);
+                }}>
+                  <img className="flipSVG" src={fliphorizontal} alt="Flip Horizontal"/>
+                </button>
+                <button className="pieceOrientation" onClick={() => {
+                  flipPiece(model, true);
+                  forceRedraw(redraw + 1);
+                }}>
+                  <img className="flipSVG" src={flipvertical} alt="Flip Vertical"/>
+                </button>
+                <button className="pieceOrientation" data-testid="counterclockwise" onClick={() => {
+                            rotatePiece(model, false);
+                            forceRedraw(redraw + 1);
+                }}>
+                  <img className="pieceOrientationSVG" src={rotateLeft} alt="Rotate Counterclockwise"/>
+                </button>
+                <button className="pieceOrientation" data-testid="clockwise" onClick={() => {
+                  rotatePiece(model, true);
+                  forceRedraw(redraw + 1);
+                }}>
+                  <img className="pieceOrientationSVG" src={rotateRight} alt="Rotate Clockwise"/>
+                </button>
+              </div>
+            </div>
+
         </div>
-        <div style={layout.pieceOrientationArea}>
-          <p style={layout.pieceOrientationText}>Piece Orientation:</p>
-          <button style={layout.pieceOrientation} onClick={() => {
-            flipPiece(model, false);
-            forceRedraw(redraw + 1);
-          }}>
-            <img style={layout.flipSVG} src={fliphorizontal} alt="Flip Horizontal"/>
-          </button>
-          <button style={layout.pieceOrientation} onClick={() => {
-            flipPiece(model, true);
-            forceRedraw(redraw + 1);
-          }}>
-            <img style={layout.flipSVG} src={flipvertical} alt="Flip Vertical"/>
-          </button>
-          <button style={layout.pieceOrientation} data-testid="counterclockwise" onClick={() => {
-                      rotatePiece(model, false);
-                      forceRedraw(redraw + 1);
-          }}>
-            <img style={layout.pieceOrientationSVG} src={rotateLeft} alt="Rotate Counterclockwise"/>
-          </button>
-          <button style={layout.pieceOrientation} data-testid="clockwise" onClick={() => {
-            rotatePiece(model, true);
-            forceRedraw(redraw + 1);
-          }}>
-            <img style={layout.pieceOrientationSVG} src={rotateRight} alt="Rotate Clockwise"/>
-          </button>
+      
+        <div className="canvasArea">
+          <Canvas
+            model={model}
+            redraw={redraw}
+            handleRedraw={handleRedraw}
+            handleCookie={handleCookie}
+          />
         </div>
+        
       </div>
-      <div style={layout.canvasArea}>
-        <canvas tabIndex="1"
-          className="App-canvas"
-          ref ={canvasRef}
-          width={dimensions.width}
-          height={dimensions.height}
-          style={layout.canvas}
-          onMouseDown={downHandler}
-          onMouseUp={upHandler}
-          onMouseMove={moveHandler}
-        />
-      </div>
+      {menu && <Menu 
+      setMenu={setMenu} 
+      menu={menu} 
+      newGameState={newGameState}
+      setNewGameState={setNewGameState}
+      setAboutState={setAboutState}
+      setRulesState={setRulesState}
+      />}
+      {(newGameState && menu) && <NewGame 
+      redraw={redraw} 
+      forceRedraw={forceRedraw} 
+      menu={menu}
+      setMenu={setMenu}
+      setNumPlayers={setNumPlayers}
+      setNewGameState={setNewGameState}
+      newGameState={newGameState}
+      />}
+      {(aboutState && menu) && <About/>}
+      {(rulesState && menu) && <Rules/>}
     </div>
   );
-
-
 }
 
 export default App;

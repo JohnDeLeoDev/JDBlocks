@@ -1,4 +1,5 @@
-import { BOXSIZE, SPACING, PLAYER1, PLAYER2, PLAYER3, PLAYER4, BOARDINDENTX, BOARDINDENTY, SELECTEDPIECELOCATION, DRAGBOUNDS } from "../boundary/boundary.js";
+import { BOXSIZE, SPACING, PLAYER1, PLAYER2, PLAYER3, PLAYER4, BOARDINDENTX, BOARDINDENTY, SELECTEDPIECELOCATION } from "../boundary/boundary.js";
+
 
 export default class Model {
     constructor(config) {
@@ -15,6 +16,29 @@ export default class Model {
         }
         this.currentPlayer = 0;
         this.gameOver = false;
+    }
+        
+    recreatePieces() {
+        for (let i = 0; i < this.players.length; i++) {
+            this.players[i].pieces = this.createPieces(i, this.playerColors[i]);
+            for (let j = 0; j < this.players[i].playedPieces.length; j++) {
+                this.players[i].pieces.splice(this.players[i].pieces.indexOf(this.players[i].playedPieces[j]), 1);
+            }
+        }
+    }
+
+    recreateBoard() {
+        let currentBoard = this.board;
+        this.board = this.createBoard();
+        for (let i = 0; i < currentBoard.boardSquares.length; i++) {
+            for (let j = 0; j < this.board.boardSquares.length; j++) {
+                if (currentBoard.boardSquares[i].row === this.board.boardSquares[j].row && currentBoard.boardSquares[i].col === this.board.boardSquares[j].col) {
+                    this.board.boardSquares[j].color = currentBoard.boardSquares[i].color;
+                    this.board.boardSquares[j].isOpen = currentBoard.boardSquares[i].isOpen;
+                }
+            }
+        }
+        
     }
 
     //check board  to see if current player can make a move at boardsquare
@@ -79,7 +103,6 @@ export default class Model {
     }
 
     checkSquaresByCoord(coord, boardSquare, piece) {
-        let checkEach = [];
         let tempShape = piece;
         tempShape.coord = coord;
         if (this.checkCornerTouch(tempShape)) {
@@ -415,15 +438,24 @@ export class Board {
             }
         }
     }    
+
 }
 
 export class BoardSquare {
-    constructor(row, col, size, movePossible, corner) {
+    constructor(row, col, size, movePossible, corner, isOpen, color) {
         this.row = row;
         this.col = col;
         this.size = size;
-        this.color = "white";
-        this.isOpen = true;
+        if (color) {
+            this.color = color;
+        } else {
+            this.color = "white";
+        }
+        if (isOpen) {
+            this.isOpen = isOpen;
+        } else {
+            this.isOpen = true;
+        }
         this.hovered = false;
         this.moveAllowed = movePossible;
         this.corner = corner;
@@ -689,7 +721,7 @@ export class PieceShape {
     }
 
     contains(x, y) {
-        return ((x + 1 >= this.bounds[0] && x - 1 <= this.bounds[1]) && (y + 1 >= this.bounds[2] && y - 1 <= this.bounds[3]));
+        return ((x + 5 >= this.bounds[0] && x - 5 <= this.bounds[1]) && (y + 5 >= this.bounds[2] && y - 5 <= this.bounds[3]));
     }
 
     clickShape(x, y) {

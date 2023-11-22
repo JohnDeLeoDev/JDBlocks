@@ -1,20 +1,17 @@
 import {DRAGBOUNDS, PLAYERBOUNDS} from '../boundary/boundary.js';
 
 
-export const CLICKOFFSETX = 15;
-export const CLICKOFFSETY = 325;
-
-export function clickPiece(model, event) {
+export function clickPiece(model, coords) {
     model.players[model.currentPlayer].unclickPieces();
-    let x = event.pageX - CLICKOFFSETX;
-    let y = event.pageY - CLICKOFFSETY;
-    if (!dragBounds(model, event)) {
+    let x = coords[0];
+    let y = coords[1];
+
+    if (!dragBounds(model, [x, y])) {
         for (let i = 0; i < model.players[model.currentPlayer].pieces.length; i++) {
             for (let j = 0; j < model.players[model.currentPlayer].pieces[i].shape.length; j++) {
                 if (model.players[model.currentPlayer].pieces[i].shape[j].clickShape(x, y)) {
                     model.players[model.currentPlayer].pieces[i].shape[j].clickShape(x, y);
                     model.players[model.currentPlayer].clickPiece(i);
-                    console.log("piece clicked")
                     return true;
                 }
             }
@@ -33,11 +30,10 @@ export function clickPiece(model, event) {
     return false;
 }
 
-export function selectPiece(model, event) {
-    let x = event.pageX - CLICKOFFSETX;
-    let y = event.pageY - CLICKOFFSETY;
-    console.log(dragBounds(model, event));
-    if (!dragBounds(model, event)) {
+export function selectPiece(model, coords) {
+    let x = coords[0];
+    let y = coords[1];
+    if (!dragBounds(model, [x, y])) {
         for (let i = 0; i < model.players[model.currentPlayer].pieces.length; i++) {
             for (let j = 0; j < model.players[model.currentPlayer].pieces[i].shape.length; j++) {
                 if (model.players[model.currentPlayer].pieces[i].shape[j].clickShape(x, y)) {
@@ -48,7 +44,7 @@ export function selectPiece(model, event) {
                         return true;
                     }
                 } else {
-                    if (!dragBounds(model, event)) {
+                    if (!dragBounds(model, [x, y])) {
                         model.players[model.currentPlayer].unselectPieces();
                     }
                 }
@@ -59,10 +55,10 @@ export function selectPiece(model, event) {
     }
 }
 
-export function movePiece(model, event) {
+export function movePiece(model, coords) {
     model.unHoverPieces();
-    let x = event.pageX - CLICKOFFSETX;
-    let y = event.pageY - CLICKOFFSETY;
+    let x = coords[0];
+    let y = coords[1];
     if (model.players[model.currentPlayer].clickedPiece !== null) {
         for (let i = 0; i < model.players[model.currentPlayer].selectedPiece.shape.length; i++) {
             model.hoverPiece(model.players[model.currentPlayer].selectedPiece);
@@ -82,9 +78,9 @@ export function movePiece(model, event) {
 
 }
 
-export function dragBounds(model, event) {
-    let x = event.pageX - CLICKOFFSETX;
-    let y = event.pageY - CLICKOFFSETY;
+export function dragBounds(model, coords) {
+    let x = coords[0];
+    let y = coords[1];
     if (x > DRAGBOUNDS[0] && x < DRAGBOUNDS[1] && y > DRAGBOUNDS[2] && y < DRAGBOUNDS[3]) {
         return true;
     } else {
@@ -92,27 +88,23 @@ export function dragBounds(model, event) {
     }
 }
 
-export function playerBounds(model, event) {
-    let x = event.pageX - CLICKOFFSETX;
-    let y = event.pageY - CLICKOFFSETY;
+export function playerBounds(model, coords) {
+    let x = coords[0];
+    let y = coords[1];
     if (model.currentPlayer === 0) {
         if (x > PLAYERBOUNDS[0][0] && x < PLAYERBOUNDS[0][1] && y > PLAYERBOUNDS[0][2] && y < PLAYERBOUNDS[0][3]) {
-            console.log("player bounds 1");
             return true;
         }
     } else if (model.currentPlayer === 1) {
         if (x > PLAYERBOUNDS[1][0] && x < PLAYERBOUNDS[1][1] && y > PLAYERBOUNDS[1][2] && y < PLAYERBOUNDS[1][3]) {
-            console.log("player bounds 2");
             return true;
         }
     } else if (model.currentPlayer === 2) {
         if (x > PLAYERBOUNDS[2][0] && x < PLAYERBOUNDS[2][1] && y > PLAYERBOUNDS[2][2] && y < PLAYERBOUNDS[2][3]) {
-            console.log("player bounds 3");
             return true;
         }
     } else if (model.currentPlayer === 3) {
         if (x > PLAYERBOUNDS[3][0] && x < PLAYERBOUNDS[3][1] && y > PLAYERBOUNDS[3][2] && y < PLAYERBOUNDS[3][3]) {
-            console.log("player bounds 4");
             return true;
         }
     }

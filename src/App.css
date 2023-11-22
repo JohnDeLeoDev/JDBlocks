@@ -13,26 +13,277 @@
   }
 }
 
-.App-header {
+.header {
   background-color: #282c34;
-  min-height: 100vh;
+  height:75px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+
+.menu {
+  position:absolute;
+  right:0;
+  top:75px;
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  height: 100%;
+  background-color: #282c34;
+  color: white;
+  padding: 10px;
+  justify-content: center;
+  z-index: 2;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.menuButton {
+  color: black;
+  fill: black;
+  margin:20px;
+  width: 50px;
+  height: 30px;
+  z-index: 0;
+}
+
+.menuButtonSVG {
+  width: 50px;
+  height: 50px;
+}
+
+
+.menuButtonActive {
+  position:absolute;
+  width: 50px;
+  height: 50px;
+  right: 30px;
+  top: 30px;
+  z-index: 0;
+}
+
+.menuItems {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background-color: #282c34;
+  color: white;
+  padding-top: 60px;
+}
+
+.menuItemButton {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  justify-content: center;
+
+
+}
+
+.newGame {
+  position:absolute;
+  color: black;
+  top:30%;
+  left:30%;
+  width: 500px;
+  background-color: white;
+  z-index: 2;
+  margin:auto;
+  border: 5px solid #282c34;
+  padding: 20px;
+
+}
+
+.playerNumberButtons {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.newGameTitle {
+  font-size: 30px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.playerNumberButton {
+  width: 50px;
+  height: 50px;
+  font-size: 30px;
+  margin: 20px;
+}
+
+.newGameClose {
+  color: black;
+  bottom:10px;
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 1;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.Appmain {
+  background-color: white;
+  height: 100%;
+  width: 100%;
+  margin: auto;
+}
+
+.canvasArea {
+  justify-content: center;
+  display: flex;
+  margin:auto;
+}
+
+.canvas {
+  margin: auto;
+}
+
+.players {
+  display: flex;
+  padding: 10px;
+  justify-content: space-between;
+  margin-right: 40px;
+}
+
+.playersButtons {
+  display: flex;
+  justify-content: space-between;
+  height: 40px;
+  width: 40px;
+  margin: auto;
+  padding: auto;
+  font-weight: bold;
+}
+
+.brand {
+  padding: 10px;
+  margin-left: 40px; 
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.buttonsArea {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  padding-top:0px;
+}
+
+.pieceOrientationText {
+  margin: 20px;
+  font-weight: bold;
+  font-size: 30px;
+}
+
+.pieceOrientation {
+  margin: 20px;
+  height: 50px;
+  width: 50px;
+}
+
+.pieceOrientationSVG {
+  color: black;
+  width: 30px;
+  height: 30px;
+}
+
+.playerText {
+  margin: 20px;
+  font-weight: bold;
+  font-size: 30px;
+}
+
+.playerChange {
+  margin: 20px;
+  width: 50px;
+  height: 50px;
+  margin: 20px;
+}
+
+.playerChangeSVG {
+  width: 30px;
+  height: 30px;
+}
+
+.skipTurn {
+  margin: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  width: 100px;
+  height: 50px;
+  font-size: 20px;
+}
+
+.playerSelect {
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+
+}
+
+.playerSelectText {
+  margin:auto;
+}
+
+.pieceOrientationText {
+  margin:auto;
+}
+
+.pieceOrientationArea {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.pieceOrientationButtons {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 1;
+}
+
+.about {
+  display:flex;
+  position:absolute;
+  flex-direction: column;
+  top:30%;
+  left: 30%;
+  margin: auto;
+  width: 700px;
+  background-color: white;
+  z-index: 2;
+  padding: 20px;
+  border: #282c34 5px solid;
+}
+
+.rules {
+  display:flex;
+  position:absolute;
+  flex-direction: column;
+  top:30%;
+  left: 30%;
+  margin: auto;
+  width: 700px;
+  background-color: white;
+  z-index: 2;
+  padding: 20px;
+  border: #282c34 5px solid;
 }

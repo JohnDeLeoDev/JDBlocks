@@ -9,6 +9,7 @@ import rotateLeft from './assets/rotate.left.svg';
 import rotateRight from './assets/rotate.right.svg';
 import fliphorizontal from './assets/flip.horizontal.svg';
 import flipvertical from './assets/flip.vertical.svg';
+import logo from './assets/JDBlocks.png';
 import menuButton from './assets/line.3.horizontal.svg';
 import {Menu, NewGame, Overlay} from './menu/menu.js';
 import {About} from './about.js';
@@ -57,7 +58,7 @@ function App() {
 
       <div className="header">
         <div className="brand">
-          <h1 className="brandText">JDBlocks</h1>
+          <a href='https://jdblocks.johndeleo.dev/'><img className="logo" src={logo} alt="JDBlocks"/></a>
         </div>
           <button className='menuButton'onClick={handleMenu}>
             <img className="menuSVG" src={menuButton} alt="Menu"/>
